@@ -1,75 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'ui/pages/login_page.dart';
+
+import 'ui/pages/auth_welcome_page.dart';
+import 'ui/pages/category_page.dart';
+import 'ui/pages/courses_list_page.dart';
 import 'ui/pages/home_page.dart';
-import 'ui/pages/membership_page.dart';
-import 'ui/pages/courses_page.dart';
-import 'ui/pages/lesson_page.dart';
-import 'ui/pages/practice_page.dart';
-import 'ui/pages/mock_test_page.dart';
-import 'ui/pages/profile_page.dart';
-import 'ui/pages/payment_page.dart';
+import 'ui/pages/onboarding_page.dart';
+import 'ui/pages/popular_courses_page.dart';
+import 'ui/pages/sign_in_page.dart';
+import 'ui/pages/sign_up_page.dart';
+import 'ui/pages/splash_page.dart';
 
 GoRouter buildRouter() {
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     routes: [
       GoRoute(
-        path: '/login',
-        name: 'login',
-        builder: (context, state) => const LoginPage(),
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashPage(),
       ),
       GoRoute(
-        path: '/',
+        path: '/onboarding',
+        name: 'onboarding',
+        builder: (context, state) => const OnboardingPage(),
+      ),
+      GoRoute(
+        path: '/auth/welcome',
+        name: 'auth_welcome',
+        builder: (context, state) => const AuthWelcomePage(),
+      ),
+      GoRoute(
+        path: '/auth/sign-up',
+        name: 'sign_up',
+        builder: (context, state) => const SignUpPage(),
+      ),
+      GoRoute(
+        path: '/auth/sign-in',
+        name: 'sign_in',
+        builder: (context, state) => const SignInPage(),
+      ),
+      GoRoute(
+        path: '/dashboard/home',
         name: 'home',
         builder: (context, state) => const HomePage(),
       ),
+      GoRoute(path: '/', redirect: (context, state) => '/dashboard/home'),
       GoRoute(
-        path: '/membership',
-        name: 'membership',
-        builder: (context, state) => const MembershipPage(),
+        path: '/categories',
+        name: 'categories',
+        builder: (context, state) => const CategoryPage(),
       ),
       GoRoute(
-        path: '/courses',
-        name: 'courses',
-        builder: (context, state) => const CoursesPage(),
+        path: '/courses/popular',
+        name: 'popular_courses',
+        builder: (context, state) => const PopularCoursesPage(),
       ),
       GoRoute(
-        path: '/lesson/:id',
-        name: 'lesson',
+        path: '/courses/list',
+        name: 'courses_list',
         builder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return LessonPage(lessonId: id);
+          final query = state.uri.queryParameters['query'] ?? 'Graphic Design';
+          return CoursesListPage(initialQuery: query);
         },
-      ),
-      GoRoute(
-        path: '/practice',
-        name: 'practice',
-        builder: (context, state) => const PracticePage(),
-      ),
-      GoRoute(
-        path: '/mock-test',
-        name: 'mock_test',
-        builder: (context, state) => const MockTestPage(),
-      ),
-      GoRoute(
-        path: '/profile',
-        name: 'profile',
-        builder: (context, state) => const ProfilePage(),
-      ),
-      GoRoute(
-        path: '/payment',
-        name: 'payment',
-        builder: (context, state) => const PaymentPage(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
       appBar: AppBar(title: const Text('Not Found')),
       body: Center(child: Text(state.error?.toString() ?? 'Page not found')),
     ),
-    redirect: (context, state) {
-      // Simple redirect stub; in future, check auth status
-      return null;
-    },
   );
 }

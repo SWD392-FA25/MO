@@ -44,7 +44,7 @@ class _MockTestPageState extends State<MockTestPage> {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
-          child: Chip(label: Text('$_formattedTime')),
+          child: Chip(label: Text(_formattedTime)),
         ),
       ],
       body: Column(

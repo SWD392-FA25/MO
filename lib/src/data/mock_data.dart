@@ -1,70 +1,80 @@
 import '../models/course.dart';
-import '../models/quiz.dart';
-import '../models/membership.dart';
-import '../models/profile.dart';
 
-class MockData {
-  static final List<Course> courses = [
-    Course(
-      id: 'c1',
-      title: 'IGCSE Mathematics Foundation',
-      subject: 'Math',
-      level: 'Core',
-      description:
-          'Master core mathematics concepts with step-by-step explanations.',
-    ),
-    Course(
-      id: 'c2',
-      title: 'IGCSE Physics Essentials',
-      subject: 'Physics',
-      level: 'Extended',
-      description: 'Understand physical principles with visual examples.',
-    ),
-    Course(
-      id: 'c3',
-      title: 'IGCSE Chemistry Concepts',
-      subject: 'Chemistry',
-      level: 'Core',
-      description: 'Build a strong foundation in chemistry for IGCSE.',
-    ),
-  ];
+const List<String> categoryFilters = [
+  'All',
+  'Creative Arts',
+  'Sciences',
+  'Business',
+  'Technology',
+];
 
-  static final List<QuizQuestion> quiz = [
-    QuizQuestion(
-      id: 'q1',
-      question: 'What is 2 + 2?',
-      options: ['3', '4', '5', '6'],
-      correctIndex: 1,
-    ),
-    QuizQuestion(
-      id: 'q2',
-      question: 'Which is a noble gas?',
-      options: ['Oxygen', 'Nitrogen', 'Argon', 'Hydrogen'],
-      correctIndex: 2,
-    ),
-  ];
+const List<Map<String, String>> homeCategories = [
+  {'label': 'Sciences'},
+  {'label': 'Technology & Computing'},
+  {'label': 'Creative Arts'},
+];
 
-  static final List<MembershipPlan> plans = const [
-    MembershipPlan(
-      id: 'free',
-      name: 'Free',
-      features: ['Limited courses', 'Basic quizzes'],
-    ),
-    MembershipPlan(
-      id: 'standard',
-      name: 'Standard',
-      features: ['All courses', 'Practice sets'],
-    ),
-    MembershipPlan(
-      id: 'premium',
-      name: 'Premium',
-      features: ['Mock tests', 'Progress insights'],
-    ),
-  ];
+const List<Map<String, String>> categoryGridItems = [
+  {'title': 'Mathematics', 'icon': 'math'},
+  {'title': 'Sciences', 'icon': 'science'},
+  {'title': 'Technology & Computing', 'icon': 'tech'},
+  {'title': 'Languages', 'icon': 'language'},
+  {'title': 'Physical Education & Wellbeing', 'icon': 'pe'},
+  {'title': 'Creative Arts', 'icon': 'art'},
+  {'title': 'Humanities & Social Sciences', 'icon': 'humanities'},
+  {'title': 'Business & Economics', 'icon': 'business'},
+];
 
-  static final Profile profile = const Profile(
-    name: 'IGCSE Learner',
-    enrolledCourses: 2,
-    membership: 'Free',
-  );
-}
+final List<Course> mockCourses = [
+  Course(
+    id: 'course-1',
+    title: 'Graphic Design Advanced',
+    category: 'Creative Arts',
+    subject: 'Creative Arts',
+    price: 28,
+    originalPrice: 42,
+    rating: 4.2,
+    students: 7830,
+    isBookmarked: true,
+  ),
+  Course(
+    id: 'course-2',
+    title: 'Advertisement Design',
+    category: 'Creative Arts',
+    subject: 'Creative Arts',
+    price: 42,
+    originalPrice: 61,
+    rating: 3.9,
+    students: 12680,
+  ),
+  Course(
+    id: 'course-3',
+    title: 'Web Developer Concepts',
+    category: 'Technology & Computing',
+    subject: 'Technology & Computing',
+    price: 56,
+    originalPrice: 71,
+    rating: 4.9,
+    students: 14580,
+  ),
+  Course(
+    id: 'course-4',
+    title: 'Advance Diploma in Graphic Design',
+    category: 'Creative Arts',
+    subject: 'Creative Arts',
+    price: 39,
+    originalPrice: 46,
+    rating: 4,
+    students: 12680,
+  ),
+  Course(
+    id: 'course-5',
+    title: 'Digital Marketing Crash Course',
+    category: 'Business & Economics',
+    subject: 'Business & Economics',
+    price: 33,
+    originalPrice: 51,
+    rating: 4.3,
+    students: 8860,
+  ),
+];

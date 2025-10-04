@@ -1,52 +1,251 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../widgets/app_scaffold.dart';
 
-class HomePage extends StatelessWidget {
+import '../../data/mock_data.dart';
+import '../../models/course.dart';
+import '../../theme/design_tokens.dart';
+import '../widgets/course_card.dart';
+import '../widgets/filter_button.dart';
+import '../widgets/search_field.dart';
+
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedFilterIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      title: 'Home',
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth > 800;
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Banner(),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
+    final textTheme = Theme.of(context).textTheme;
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _ShortcutCard(
-                      icon: Icons.quiz,
-                      label: 'Practice',
-                      onTap: () => context.go('/practice'),
+                    _Header(textTheme: textTheme),
+                    const SizedBox(height: 24),
+                    SearchField(trailing: FilterButton(onPressed: () {})),
+                    const SizedBox(height: 24),
+                    const _SpecialOfferCard(),
+                    const SizedBox(height: 28),
+                    _SectionHeading(
+                      title: 'Categories',
+                      onActionTap: () => context.go('/categories'),
                     ),
-                    _ShortcutCard(
-                      icon: Icons.assignment_turned_in,
-                      label: 'Mock Test',
-                      onTap: () => context.go('/mock-test'),
+                    const SizedBox(height: 16),
+                    _CategoryScroller(items: homeCategories),
+                    const SizedBox(height: 24),
+                    _SectionHeading(
+                      title: 'Popular Courses',
+                      onActionTap: () => context.go('/courses/popular'),
                     ),
-                    _ShortcutCard(
-                      icon: Icons.menu_book,
-                      label: 'Courses',
-                      onTap: () => context.go('/courses'),
+                    const SizedBox(height: 16),
+                    _FilterChips(
+                      selectedIndex: _selectedFilterIndex,
+                      onSelected: (index) =>
+                          setState(() => _selectedFilterIndex = index),
                     ),
+                    const SizedBox(height: 20),
+                    ..._buildCoursesForFilter(),
+                    const SizedBox(height: 80),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Suggested Courses',
-                  style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _HomeNavigationBar(
+        onItemSelected: (index) {
+          if (index == 0) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Only Home is implemented in this mockup.'),
+              behavior: SnackBarBehavior.floating,
+              action: SnackBarAction(label: 'Close', onPressed: () {}),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  List<Widget> _buildCoursesForFilter() {
+    final filter = categoryFilters[_selectedFilterIndex];
+    final Iterable<Course> filtered = filter == 'All'
+        ? mockCourses
+        : mockCourses.where(
+            (course) => course.category == filter || course.subject == filter,
+          );
+    return filtered
+        .map(
+          (course) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: CourseCard(course: course),
+          ),
+        )
+        .toList();
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.textTheme});
+
+  final TextTheme textTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hi, Shirayuki Luna',
+                style: textTheme.titleLarge?.copyWith(fontSize: 24),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'What would you like to learn today?\nSearch below.',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
                 ),
-                const SizedBox(height: 8),
-                _CourseSuggestionsGrid(isWide: isWide),
-              ],
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.cardShadow,
+                blurRadius: 12,
+                offset: Offset(0, 6),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.notifications_none_rounded,
+            color: AppColors.primary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SpecialOfferCard extends StatelessWidget {
+  const _SpecialOfferCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF5C53FF), AppColors.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: 24,
+            offset: Offset(0, 16),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            '25% OFF*',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 12),
+          Text(
+            "Today's Special",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Get a discount for every course order only valid for today.',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({required this.title, this.onActionTap});
+
+  final String title;
+  final VoidCallback? onActionTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Row(
+      children: [
+        Text(title, style: textTheme.titleMedium),
+        const Spacer(),
+        TextButton(onPressed: onActionTap, child: const Text('SEE ALL')),
+      ],
+    );
+  }
+}
+
+class _CategoryScroller extends StatelessWidget {
+  const _CategoryScroller({required this.items});
+
+  final List<Map<String, String>> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 20),
+        itemBuilder: (context, index) {
+          final label = items[index]['label']!;
+          return Text(
+            label,
+            style: textTheme.bodyMedium?.copyWith(
+              color: index == 1 ? AppColors.primary : AppColors.textSecondary,
+              fontWeight: index == 1 ? FontWeight.w600 : FontWeight.w500,
             ),
           );
         },
@@ -55,141 +254,79 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _Banner extends StatelessWidget {
+class _FilterChips extends StatelessWidget {
+  const _FilterChips({required this.selectedIndex, required this.onSelected});
+
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.9),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.8),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              'Master IGCSE at your pace',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (var i = 0; i < categoryFilters.length; i++)
+            Padding(
+              padding: EdgeInsets.only(
+                right: i == categoryFilters.length - 1 ? 0 : 12,
+              ),
+              child: ChoiceChip(
+                selected: selectedIndex == i,
+                onSelected: (_) => onSelected(i),
+                label: Text(categoryFilters[i]),
               ),
             ),
-            SizedBox(height: 8),
-            Text(
-              'Structured courses, practice, and mock tests to excel.',
-              style: TextStyle(color: Colors.white70),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class _ShortcutCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _ShortcutCard({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+class _HomeNavigationBar extends StatefulWidget {
+  const _HomeNavigationBar({required this.onItemSelected});
+
+  final ValueChanged<int> onItemSelected;
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 180,
-      child: Card(
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Icon(
-                  icon,
-                  size: 36,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(height: 8),
-                Text(label),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  State<_HomeNavigationBar> createState() => _HomeNavigationBarState();
 }
 
-class _CourseSuggestionsGrid extends StatelessWidget {
-  final bool isWide;
-  const _CourseSuggestionsGrid({required this.isWide});
+class _HomeNavigationBarState extends State<_HomeNavigationBar> {
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    final courses = _mockCourses.take(4).toList();
-    final crossAxisCount = isWide ? 4 : 2;
-    return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.2,
-      ),
-      itemCount: courses.length,
-      itemBuilder: (context, index) {
-        final c = courses[index];
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  c['title']!,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Chip(label: Text(c['subject']!)),
-                    Text(c['level']!),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
+    return NavigationBar(
+      selectedIndex: _currentIndex,
+      height: 72,
+      onDestinationSelected: (index) {
+        setState(() => _currentIndex = index);
+        widget.onItemSelected(index);
       },
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home_rounded),
+          label: 'Home',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.menu_book_outlined),
+          label: 'My Courses',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.library_books_outlined),
+          label: 'Library',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.receipt_long_outlined),
+          label: 'Transaction',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.person_outline_rounded),
+          label: 'Profile',
+        ),
+      ],
     );
   }
 }
-
-final List<Map<String, String>> _mockCourses = [
-  {'title': 'IGCSE Mathematics Foundation', 'subject': 'Math', 'level': 'Core'},
-  {
-    'title': 'IGCSE Physics Essentials',
-    'subject': 'Physics',
-    'level': 'Extended',
-  },
-  {
-    'title': 'IGCSE Chemistry Concepts',
-    'subject': 'Chemistry',
-    'level': 'Core',
-  },
-  {'title': 'IGCSE Biology Mastery', 'subject': 'Biology', 'level': 'Extended'},
-  {'title': 'IGCSE English Language', 'subject': 'English', 'level': 'Core'},
-];
