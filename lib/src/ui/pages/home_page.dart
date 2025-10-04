@@ -316,7 +316,7 @@ class _HomeNavigationBarState extends State<_HomeNavigationBar> {
         ),
         NavigationDestination(
           icon: Icon(Icons.library_books_outlined),
-          label: 'Library',
+          label: 'Lunaby',
         ),
         NavigationDestination(
           icon: Icon(Icons.receipt_long_outlined),
