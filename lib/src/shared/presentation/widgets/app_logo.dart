@@ -6,6 +6,9 @@ class AppLogo extends StatelessWidget {
 
   final double size;
 
+  static const _primaryAsset = 'assets/images/app_logo_mobile.png';
+  static const _fallbackAsset = 'assets/images/app_logo.png';
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -13,11 +16,6 @@ class AppLogo extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(size * 0.24),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF2E8FDB), AppColors.primary],
-        ),
         boxShadow: const [
           BoxShadow(
             color: AppColors.cardShadow,
@@ -26,23 +24,49 @@ class AppLogo extends StatelessWidget {
           ),
         ],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: size * 0.76,
-            height: size * 0.76,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(size * 0.2),
-              color: Colors.white.withAlpha(31),
-            ),
-          ),
-          Icon(
-            Icons.auto_stories_rounded,
-            color: Colors.white,
-            size: size * 0.54,
-          ),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(size * 0.24),
+        child: Image.asset(
+          _primaryAsset,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, _, __) {
+            return Image.asset(
+              _fallbackAsset,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              errorBuilder: (context, __, ___) => _FallbackLogo(size: size),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _FallbackLogo extends StatelessWidget {
+  const _FallbackLogo({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2E8FDB), AppColors.primary],
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.auto_stories_rounded,
+          color: Colors.white,
+          size: size * 0.54,
+        ),
       ),
     );
   }

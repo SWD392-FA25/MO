@@ -8,11 +8,13 @@ class CategoryTile extends StatelessWidget {
     required this.title,
     required this.icon,
     this.onTap,
+    this.imageAsset,
   });
 
   final String title;
   final IconData icon;
   final VoidCallback? onTap;
+  final String? imageAsset;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,17 @@ class CategoryTile extends StatelessWidget {
                 color: AppColors.primary.withAlpha(20),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: Icon(icon, color: AppColors.primary, size: 28),
+              child: imageAsset != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Image.asset(
+                        imageAsset!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            Icon(icon, color: AppColors.primary, size: 28),
+                      ),
+                    )
+                  : Icon(icon, color: AppColors.primary, size: 28),
             ),
             const SizedBox(height: 16),
             Text(

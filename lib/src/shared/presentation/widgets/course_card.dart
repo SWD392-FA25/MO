@@ -36,20 +36,7 @@ class CourseCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              width: 84,
-              height: 84,
-              decoration: BoxDecoration(
-                color: AppColors.textPrimary.withAlpha(20),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              // TODO: Thay bằng thumbnail khoá học từ Figma khi có asset xuất ra.
-              child: const Icon(
-                Icons.play_circle_filled_rounded,
-                size: 36,
-                color: AppColors.primary,
-              ),
-            ),
+            _Thumbnail(),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -128,6 +115,34 @@ class CourseCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Thumbnail extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Image.asset(
+        'assets/images/course_placeholder.png',
+        width: 84,
+        height: 84,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Container(
+          width: 84,
+          height: 84,
+          decoration: BoxDecoration(
+            color: AppColors.textPrimary.withAlpha(20),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Icon(
+            Icons.play_circle_filled_rounded,
+            size: 36,
+            color: AppColors.primary,
+          ),
         ),
       ),
     );

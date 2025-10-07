@@ -74,9 +74,11 @@ class _CategoryPageState extends State<CategoryPage> {
                   itemCount: items.length,
                   itemBuilder: (context, index) {
                     final item = items[index];
+                    final iconKey = item['icon']!;
                     return CategoryTile(
                       title: item['title']!,
-                      icon: _mapIcon(item['icon']!),
+                      icon: _mapIcon(iconKey),
+                      imageAsset: _assetForIcon(iconKey),
                       onTap: () {},
                     );
                   },
@@ -109,6 +111,17 @@ class _CategoryPageState extends State<CategoryPage> {
         return Icons.account_balance_rounded;
       default:
         return Icons.category_rounded;
+    }
+  }
+
+  String? _assetForIcon(String key) {
+    switch (key) {
+      case 'pe':
+        return 'assets/images/category_physical_education.png';
+      case 'humanities':
+        return 'assets/images/category_social_science.png';
+      default:
+        return null;
     }
   }
 
