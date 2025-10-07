@@ -5,6 +5,7 @@ import 'package:igcse_learning_hub/src/data/mock_data.dart';
 import 'package:igcse_learning_hub/src/models/course.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/course_card.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/filter_button.dart';
+import 'package:igcse_learning_hub/src/shared/presentation/widgets/filter_selection_sheet.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/search_field.dart';
 import 'package:igcse_learning_hub/src/theme/design_tokens.dart';
 
@@ -63,7 +64,7 @@ class _SearchPageState extends State<SearchPage> {
                 controller: _controller,
                 hintText: 'Tìm khóa học, chủ đề, giáo viên...',
                 onChanged: (value) => setState(() => _query = value.trim()),
-                trailing: FilterButton(onPressed: () {}),
+                trailing: FilterButton(onPressed: _openFilterSheet),
               ),
             ),
             const SizedBox(height: 12),
@@ -160,6 +161,17 @@ class _SearchPageState extends State<SearchPage> {
               course.subject.toLowerCase().contains(normalizedQuery),
         )
         .toList();
+  }
+
+  Future<void> _openFilterSheet() async {
+    final selected = await showFilterSelectionSheet(
+      context: context,
+      options: categoryFilters,
+      selectedIndex: _selectedCategory,
+      title: 'Lọc kết quả tìm kiếm',
+    );
+    if (!mounted || selected == null) return;
+    setState(() => _selectedCategory = selected);
   }
 }
 

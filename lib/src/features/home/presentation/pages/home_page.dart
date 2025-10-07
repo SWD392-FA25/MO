@@ -5,6 +5,7 @@ import 'package:igcse_learning_hub/src/data/mock_data.dart';
 import 'package:igcse_learning_hub/src/models/course.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/course_card.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/filter_button.dart';
+import 'package:igcse_learning_hub/src/shared/presentation/widgets/filter_selection_sheet.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/search_field.dart';
 import 'package:igcse_learning_hub/src/theme/design_tokens.dart';
 
@@ -41,7 +42,7 @@ class _HomePageState extends State<HomePage> {
                       readOnly: true,
                       onTap: () => context.push('/search'),
                       trailing: FilterButton(
-                        onPressed: () => context.push('/search'),
+                        onPressed: _openFilterSheet,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -95,6 +96,18 @@ class _HomePageState extends State<HomePage> {
           ),
         )
         .toList();
+  }
+
+  Future<void> _openFilterSheet() async {
+    final selected = await showFilterSelectionSheet(
+      context: context,
+      options: categoryFilters,
+      selectedIndex: _selectedFilterIndex,
+      title: 'Lọc khoá học',
+      description: 'Chọn danh mục để hiển thị các khoá học phù hợp.',
+    );
+    if (!mounted || selected == null) return;
+    setState(() => _selectedFilterIndex = selected);
   }
 }
 
