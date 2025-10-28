@@ -2,16 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-// Temporary imports - will be updated when pages are moved to features
-import '../../src/ui/pages/auth_welcome_page.dart';
-import '../../src/ui/pages/category_page.dart';
-import '../../src/ui/pages/courses_list_page.dart';
-import '../../src/ui/pages/home_page.dart';
-import '../../src/ui/pages/onboarding_page.dart';
-import '../../src/ui/pages/popular_courses_page.dart';
-import '../../src/ui/pages/sign_in_page.dart';
-import '../../src/ui/pages/sign_up_page.dart';
-import '../../src/ui/pages/splash_page.dart';
+// Auth feature screens
+import '../../features/auth/presentation/screens/auth_welcome_page.dart';
+import '../../features/auth/presentation/screens/sign_in_page.dart';
+import '../../features/auth/presentation/screens/sign_up_page.dart';
+
+// Home feature screens
+import '../../features/home/presentation/screens/splash_page.dart';
+import '../../features/home/presentation/screens/onboarding_page.dart';
+import '../../features/home/presentation/screens/home_page.dart';
+
+// Courses feature screens
+import '../../features/courses/presentation/screens/category_page.dart';
+import '../../features/courses/presentation/screens/courses_list_page.dart';
+import '../../features/courses/presentation/screens/popular_courses_page.dart';
 
 // Router provider
 final appRouterProvider = Provider<GoRouter>((ref) {
