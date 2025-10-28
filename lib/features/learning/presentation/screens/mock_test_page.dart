@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../widgets/app_scaffold.dart';
+import '../../../../shared/widgets/app_scaffold.dart';
 
 class MockTestPage extends StatefulWidget {
   const MockTestPage({super.key});

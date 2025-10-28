@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/design_tokens.dart';
+import '../../../../src/theme/design_tokens.dart';
 
 class CategoryTile extends StatelessWidget {
   const CategoryTile({

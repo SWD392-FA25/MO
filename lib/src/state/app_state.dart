@@ -1,21 +1,34 @@
 import 'package:flutter/foundation.dart';
 
-class AppState extends ChangeNotifier {
-  bool _isLoggedIn = false;
-  String? _studentName;
+// Legacy AppState for backward compatibility
+// TODO: Migrate to Riverpod state management
+class AppState with ChangeNotifier {
+  int _selectedIndex = 0;
+  String? _displayName;
 
-  bool get isLoggedIn => _isLoggedIn;
-  String get displayName => _studentName ?? 'Student';
+  int get selectedIndex => _selectedIndex;
+  String? get displayName => _displayName;
 
-  void loginWithGoogleMock() {
-    _isLoggedIn = true;
-    _studentName = 'IGCSE Learner';
+  void setSelectedIndex(int index) {
+    _selectedIndex = index;
     notifyListeners();
   }
 
-  void logout() {
-    _isLoggedIn = false;
-    _studentName = null;
+  void navigateTo(int index) {
+    setSelectedIndex(index);
+  }
+
+  // Mock login methods for compatibility
+  Future<void> loginWithGoogleMock() async {
+    // TODO: Implement actual Google login
+    await Future.delayed(const Duration(seconds: 1));
+    _displayName = 'Guest User';
+    notifyListeners();
+  }
+
+  Future<void> logout() async {
+    _displayName = null;
+    _selectedIndex = 0;
     notifyListeners();
   }
 }

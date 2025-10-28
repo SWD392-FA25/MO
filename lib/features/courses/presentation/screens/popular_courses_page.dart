@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../data/mock_data.dart';
-import '../../models/course.dart';
-import '../../theme/design_tokens.dart';
+import '../../../../src/data/mock_data.dart';
+import '../../../../src/models/course.dart';
+import '../../../../src/theme/design_tokens.dart';
 import '../widgets/course_card.dart';
 
 class PopularCoursesPage extends StatefulWidget {

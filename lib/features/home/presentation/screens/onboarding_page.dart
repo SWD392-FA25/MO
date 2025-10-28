@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../theme/design_tokens.dart';
-import '../widgets/rounded_icon_button.dart';
+import '../../../../src/theme/design_tokens.dart';
+import '../../../../shared/widgets/rounded_icon_button.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});

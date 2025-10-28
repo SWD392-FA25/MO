@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../data/mock_data.dart';
-import '../../theme/design_tokens.dart';
+import '../../../../src/data/mock_data.dart';
+import '../../../../src/theme/design_tokens.dart';
 import '../widgets/category_tile.dart';
 import '../widgets/filter_button.dart';
-import '../widgets/search_field.dart';
+import '../../../../shared/widgets/search_field.dart';
 
 class CategoryPage extends StatelessWidget {
   const CategoryPage({super.key});

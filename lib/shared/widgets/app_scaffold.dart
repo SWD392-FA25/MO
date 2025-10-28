@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../state/app_state.dart';
+import '../../src/state/app_state.dart';
 
 class AppScaffold extends StatelessWidget {
   final String title;
@@ -47,7 +47,7 @@ class _AppDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text(appState.displayName),
+            accountName: Text(appState.displayName ?? 'Guest'),
             accountEmail: const Text('learner@igcse.app'),
             currentAccountPicture: const CircleAvatar(
               child: Icon(Icons.person),

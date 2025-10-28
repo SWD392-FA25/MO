@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../theme/design_tokens.dart';
-import '../widgets/app_logo.dart';
+import '../../../../src/theme/design_tokens.dart';
+import '../../../../shared/widgets/app_logo.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});

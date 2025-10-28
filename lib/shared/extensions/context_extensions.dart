@@ -22,18 +22,15 @@ extension ContextExtensions on BuildContext {
   bool get isTablet => screenWidth >= 600 && screenWidth < 1200;
   bool get isDesktop => screenWidth >= 1200;
   
-  // Navigation extensions
-  void pop<T>([T? result]) => GoRouter.of(this).pop(result);
-  void push(String location, {Object? extra}) => GoRouter.of(this).push(location, extra: extra);
-  void pushNamed(String name, {Map<String, String>? params, Object? extra}) => 
-      GoRouter.of(this).pushNamed(name, pathParameters: params ?? {}, extra: extra);
-  void go(String location, {Object? extra}) => GoRouter.of(this).go(location, extra: extra);
-  void goNamed(String name, {Map<String, String>? params, Object? extra}) => 
-      GoRouter.of(this).goNamed(name, pathParameters: params ?? {}, extra: extra);
-  void pushReplacement(String location, {Object? extra}) => 
-      GoRouter.of(this).pushReplacement(location, extra: extra);
-  void pushReplacementNamed(String name, {Map<String, String>? params, Object? extra}) => 
-      GoRouter.of(this).pushReplacementNamed(name, pathParameters: params ?? {}, extra: extra);
+  // Navigation extensions - use GoRouter methods directly to avoid conflicts
+  GoRouter get router => GoRouter.of(this);
+  
+  void navigate(String location, {Object? extra}) => router.go(location, extra: extra);
+  void navigateNamed(String name, {Map<String, String>? params, Object? extra}) => 
+      router.goNamed(name, pathParameters: params ?? {}, extra: extra);
+  void pushTo(String location, {Object? extra}) => router.push(location, extra: extra);
+  void pushToNamed(String name, {Map<String, String>? params, Object? extra}) => 
+      router.pushNamed(name, pathParameters: params ?? {}, extra: extra);
   
   // Snackbar helpers
   void showSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
@@ -87,12 +84,12 @@ extension ContextExtensions on BuildContext {
         actions: [
           if (cancelText != null)
             TextButton(
-              onPressed: () => context.pop(false),
+              onPressed: () => Navigator.of(context).pop(false),
               child: Text(cancelText),
             ),
           if (confirmText != null)
             FilledButton(
-              onPressed: () => context.pop(true),
+              onPressed: () => Navigator.of(context).pop(true),
               child: Text(confirmText),
             ),
         ],

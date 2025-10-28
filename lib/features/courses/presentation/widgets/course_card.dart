@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../models/course.dart';
-import '../../theme/design_tokens.dart';
+import '../../../../src/models/course.dart';
+import '../../../../src/theme/design_tokens.dart';
 
 class CourseCard extends StatelessWidget {
   const CourseCard({
@@ -55,7 +55,7 @@ class CourseCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    course.subject,
+                    course.subject ?? course.category,
                     style: textTheme.bodySmall?.copyWith(
                       color: AppColors.accent,
                       fontWeight: FontWeight.w600,
@@ -78,9 +78,10 @@ class CourseCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        '\$${course.originalPrice.toStringAsFixed(0)}',
-                        style: textTheme.bodySmall?.copyWith(
+                      if (course.originalPrice != null)
+                        Text(
+                          '\$${course.originalPrice!.toStringAsFixed(0)}',
+                          style: textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                           decoration: TextDecoration.lineThrough,
                         ),

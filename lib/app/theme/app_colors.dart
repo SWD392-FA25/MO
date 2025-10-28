@@ -34,4 +34,13 @@ class AppColors {
   static const Color backgroundDark = Color(0xFF121212);
   static const Color surfaceLight = Colors.white;
   static const Color surfaceDark = Color(0xFF1E1E1E);
+  
+  // Legacy compatibility - mapped to new colors
+  static const Color background = backgroundLight;
+  static const Color surface = surfaceLight;
+  static const Color textPrimary = gray900;
+  static const Color textSecondary = gray600;
+  static const Color border = gray300;
+  static const Color accent = primary;
+  static const Color cardShadow = gray200;
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../theme/design_tokens.dart';
-import '../widgets/app_logo.dart';
-import '../widgets/primary_capsule_button.dart';
+import '../../../../src/theme/design_tokens.dart';
+import '../../../../shared/widgets/app_logo.dart';
+import '../../../../shared/widgets/primary_capsule_button.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

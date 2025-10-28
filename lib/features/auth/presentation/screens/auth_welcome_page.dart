@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../state/app_state.dart';
-import '../../theme/design_tokens.dart';
-import '../widgets/app_logo.dart';
-import '../widgets/primary_capsule_button.dart';
+import '../../../../src/state/app_state.dart';
+import '../../../../src/theme/design_tokens.dart';
+import '../../../../shared/widgets/app_logo.dart';
+import '../../../../shared/widgets/primary_capsule_button.dart';
 
 class AuthWelcomePage extends StatelessWidget {
   const AuthWelcomePage({super.key});

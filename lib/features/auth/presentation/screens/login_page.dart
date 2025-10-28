@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../state/app_state.dart';
+import '../../../../src/state/app_state.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
