@@ -9,15 +9,48 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  dio: ^5.5.0+1
-  go_router: ^14.2.7
-  provider: ^6.1.2
-
-  google_fonts: ^6.2.1
+  
+  # State Management
+  flutter_riverpod: ^2.5.1        # State management (replacing Provider)
+  
+  # Navigation
+  go_router: ^14.2.7               # Declarative routing (already exists)
+  
+  # Network
+  dio: ^5.5.0+1                    # HTTP client (already exists)
+  retrofit: ^4.0.3                 # Type-safe API client
+  
+  # Local Storage
+  shared_preferences: ^2.2.2       # Simple key-value storage
+  hive: ^2.2.3                     # NoSQL database
+  hive_flutter: ^1.1.0             # Hive Flutter integration
+  
+  # JSON Serialization
+  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.1       # Immutable models
+  
+  # Video Player
+  video_player: ^2.8.2
+  chewie: ^1.7.5                   # Video UI controls
+  
+  # UI
+  cached_network_image: ^3.3.1     # Image caching
+  flutter_svg: ^2.0.10             # SVG support
+  google_fonts: ^6.2.1             # Already exists
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  
+  # Code Generation
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
+  freezed: ^2.4.7
+  retrofit_generator: ^8.0.6
+  hive_generator: ^2.0.1
+  
+  # Testing
+  mockito: ^5.4.4
 
 flutter:
   uses-material-design: true

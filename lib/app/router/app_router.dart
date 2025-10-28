@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'ui/pages/auth_welcome_page.dart';
-import 'ui/pages/category_page.dart';
-import 'ui/pages/courses_list_page.dart';
-import 'ui/pages/home_page.dart';
-import 'ui/pages/onboarding_page.dart';
-import 'ui/pages/popular_courses_page.dart';
-import 'ui/pages/sign_in_page.dart';
-import 'ui/pages/sign_up_page.dart';
-import 'ui/pages/splash_page.dart';
+// Temporary imports - will be updated when pages are moved to features
+import '../../src/ui/pages/auth_welcome_page.dart';
+import '../../src/ui/pages/category_page.dart';
+import '../../src/ui/pages/courses_list_page.dart';
+import '../../src/ui/pages/home_page.dart';
+import '../../src/ui/pages/onboarding_page.dart';
+import '../../src/ui/pages/popular_courses_page.dart';
+import '../../src/ui/pages/sign_in_page.dart';
+import '../../src/ui/pages/sign_up_page.dart';
+import '../../src/ui/pages/splash_page.dart';
 
-GoRouter buildRouter() {
+// Router provider
+final appRouterProvider = Provider<GoRouter>((ref) {
+  return _buildRouter(ref);
+});
+
+GoRouter _buildRouter(ProviderRef ref) {
   return GoRouter(
     initialLocation: '/splash',
     routes: [
