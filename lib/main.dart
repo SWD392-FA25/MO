@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'src/app_router.dart';
-import 'src/theme/app_theme.dart';
-import 'src/state/app_state.dart';
+import 'app/router/app_router.dart';
+import 'core/theme/app_theme.dart';
+import 'core/state/app_state.dart';
 
 void main() {
   runApp(const IGCSELearningHub());
