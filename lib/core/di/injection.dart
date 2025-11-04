@@ -19,7 +19,15 @@ import '../../src/features/catalog/domain/repositories/course_repository.dart';
 import '../../src/features/catalog/domain/usecases/get_course_detail.dart';
 import '../../src/features/catalog/domain/usecases/get_course_lessons.dart';
 import '../../src/features/catalog/domain/usecases/get_courses.dart';
+import '../../src/features/catalog/presentation/providers/livestream_provider.dart';
+import '../../src/features/catalog/presentation/providers/package_provider.dart';
 import '../../src/features/my_courses/data/datasources/enrollment_remote_datasource.dart';
+import '../../src/features/my_courses/presentation/providers/enrollment_provider.dart';
+import '../../src/features/my_courses/presentation/providers/my_course_provider.dart';
+import '../../src/features/profile/presentation/providers/profile_provider.dart';
+import '../../src/features/quiz/presentation/providers/quiz_provider.dart';
+import '../../src/features/transactions/presentation/providers/order_provider.dart';
+import '../../src/features/transactions/presentation/providers/payment_provider.dart';
 import '../../src/features/my_courses/data/datasources/my_course_remote_datasource.dart';
 import '../../src/features/my_courses/data/repositories/enrollment_repository_impl.dart';
 import '../../src/features/my_courses/data/repositories/my_course_repository_impl.dart';
@@ -168,9 +176,16 @@ Future<void> _setupCourses() async {
   getIt.registerLazySingleton(() => GetCourseLessons(getIt()));
 
   getIt.registerFactory(
-    () => CourseProvider(
-      getCoursesUseCase: getIt(),
-      getCourseDetailUseCase: getIt(),
+    () => PackageProvider(
+      getPackagesUseCase: getIt(),
+      getPackageDetailUseCase: getIt(),
+    ),
+  );
+
+  getIt.registerFactory(
+    () => LivestreamProvider(
+      getLivestreamsUseCase: getIt(),
+      getLivestreamDetailUseCase: getIt(),
     ),
   );
 }
@@ -190,6 +205,14 @@ Future<void> _setupMyCourses() async {
   getIt.registerLazySingleton(() => GetMyCourseLessons(getIt()));
   getIt.registerLazySingleton(() => CompleteLesson(getIt()));
   getIt.registerLazySingleton(() => GetCourseProgress(getIt()));
+
+  getIt.registerFactory(
+    () => MyCourseProvider(
+      getMyCourseLessonsUseCase: getIt(),
+      completeLessonUseCase: getIt(),
+      getCourseProgressUseCase: getIt(),
+    ),
+  );
 }
 
 Future<void> _setupEnrollments() async {
@@ -205,6 +228,10 @@ Future<void> _setupEnrollments() async {
   );
 
   getIt.registerLazySingleton(() => GetMyEnrollments(getIt()));
+
+  getIt.registerFactory(
+    () => EnrollmentProvider(getMyEnrollmentsUseCase: getIt()),
+  );
 }
 
 Future<void> _setupOrders() async {
@@ -222,6 +249,14 @@ Future<void> _setupOrders() async {
   getIt.registerLazySingleton(() => CreateOrder(getIt()));
   getIt.registerLazySingleton(() => GetMyOrders(getIt()));
   getIt.registerLazySingleton(() => CheckoutOrder(getIt()));
+
+  getIt.registerFactory(
+    () => OrderProvider(
+      createOrderUseCase: getIt(),
+      getMyOrdersUseCase: getIt(),
+      checkoutOrderUseCase: getIt(),
+    ),
+  );
 }
 
 Future<void> _setupPayments() async {
@@ -237,6 +272,13 @@ Future<void> _setupPayments() async {
   );
 
   getIt.registerLazySingleton(() => CreateVnPayCheckout(getIt()));
+
+  getIt.registerFactory(
+    () => PaymentProvider(
+      getPaymentMethodsUseCase: getIt(),
+      getActivePaymentMethodsUseCase: getIt(),
+    ),
+  );
 }
 
 Future<void> _setupPackages() async {
@@ -269,6 +311,13 @@ Future<void> _setupProfile() async {
 
   getIt.registerLazySingleton(() => GetProfile(getIt()));
   getIt.registerLazySingleton(() => UpdateProfile(getIt()));
+
+  getIt.registerFactory(
+    () => ProfileProvider(
+      getProfileUseCase: getIt(),
+      updateProfileUseCase: getIt(),
+    ),
+  );
 }
 
 Future<void> _setupQuizzes() async {
@@ -287,6 +336,15 @@ Future<void> _setupQuizzes() async {
   getIt.registerLazySingleton(() => CreateQuizAttempt(getIt()));
   getIt.registerLazySingleton(() => SubmitQuizAttempt(getIt()));
   getIt.registerLazySingleton(() => GetMyQuizAttempts(getIt()));
+
+  getIt.registerFactory(
+    () => QuizProvider(
+      getQuizForTakeUseCase: getIt(),
+      createQuizAttemptUseCase: getIt(),
+      submitQuizAttemptUseCase: getIt(),
+      getMyQuizAttemptsUseCase: getIt(),
+    ),
+  );
 }
 
 Future<void> _setupAssignments() async {

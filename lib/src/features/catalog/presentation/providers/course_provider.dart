@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../../../core/usecases/usecase.dart';
 import '../../domain/entities/course.dart';
 import '../../domain/usecases/get_course_detail.dart';
 import '../../domain/usecases/get_courses.dart';

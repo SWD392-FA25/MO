@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:igcse_learning_hub/core/di/injection.dart';
-import 'package:igcse_learning_hub/core/usecases/usecase.dart';
 import 'package:igcse_learning_hub/src/features/catalog/domain/usecases/get_courses.dart';
 import 'package:igcse_learning_hub/src/features/authentication/domain/usecases/sign_in.dart';
 
