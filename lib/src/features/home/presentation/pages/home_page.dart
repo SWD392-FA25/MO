@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import 'package:igcse_learning_hub/src/data/mock_data.dart';
+import 'package:igcse_learning_hub/src/features/catalog/presentation/providers/course_provider.dart';
 import 'package:igcse_learning_hub/src/models/course.dart';
+import 'package:igcse_learning_hub/src/models/course_extensions.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/course_card.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/filter_button.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/filter_selection_sheet.dart';
@@ -20,20 +23,33 @@ class _HomePageState extends State<HomePage> {
   int _selectedFilterIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CourseProvider>().loadCourses(refresh: true);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final courseProvider = context.watch<CourseProvider>();
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
-                child: Column(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await courseProvider.loadCourses(refresh: true);
+                },
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _Header(textTheme: textTheme),
@@ -72,6 +88,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+          ),
           ],
         ),
       ),
@@ -79,12 +96,75 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<Widget> _buildCoursesForFilter() {
+    final courseProvider = context.watch<CourseProvider>();
+
+    // Show loading indicator
+    if (courseProvider.isLoading && courseProvider.courses.isEmpty) {
+      return [
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(32.0),
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      ];
+    }
+
+    // Show error message
+    if (courseProvider.errorMessage != null &&
+        courseProvider.courses.isEmpty) {
+      return [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              children: [
+                const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                const SizedBox(height: 16),
+                Text(
+                  courseProvider.errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () =>
+                      courseProvider.loadCourses(refresh: true),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ];
+    }
+
+    // Convert API courses to UI courses
+    final uiCourses = courseProvider.courses.toUIModels();
+
+    // Show empty state
+    if (uiCourses.isEmpty) {
+      return [
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(32.0),
+            child: Text(
+              'No courses available',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    // Filter courses
     final filter = categoryFilters[_selectedFilterIndex];
     final Iterable<Course> filtered = filter == 'All'
-        ? mockCourses
-        : mockCourses.where(
+        ? uiCourses
+        : uiCourses.where(
             (course) => course.category == filter || course.subject == filter,
           );
+
     return filtered
         .map(
           (course) => Padding(

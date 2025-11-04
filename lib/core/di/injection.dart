@@ -19,6 +19,7 @@ import '../../src/features/catalog/domain/repositories/course_repository.dart';
 import '../../src/features/catalog/domain/usecases/get_course_detail.dart';
 import '../../src/features/catalog/domain/usecases/get_course_lessons.dart';
 import '../../src/features/catalog/domain/usecases/get_courses.dart';
+import '../../src/features/catalog/presentation/providers/course_provider.dart';
 import '../../src/features/catalog/presentation/providers/livestream_provider.dart';
 import '../../src/features/catalog/presentation/providers/package_provider.dart';
 import '../../src/features/my_courses/data/datasources/enrollment_remote_datasource.dart';
@@ -174,6 +175,13 @@ Future<void> _setupCourses() async {
   getIt.registerLazySingleton(() => GetCourses(getIt()));
   getIt.registerLazySingleton(() => GetCourseDetail(getIt()));
   getIt.registerLazySingleton(() => GetCourseLessons(getIt()));
+
+  getIt.registerFactory(
+    () => CourseProvider(
+      getCoursesUseCase: getIt(),
+      getCourseDetailUseCase: getIt(),
+    ),
+  );
 
   getIt.registerFactory(
     () => PackageProvider(

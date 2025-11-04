@@ -5,12 +5,12 @@ import '../entities/auth_token.dart';
 import '../entities/user.dart';
 
 abstract class AuthRepository {
-  Future<Either<Failure, AuthToken>> signIn({
+  Future<Either<Failure, User>> signIn({
     required String email,
     required String password,
   });
 
-  Future<Either<Failure, AuthToken>> signUp({
+  Future<Either<Failure, User>> signUp({
     required String email,
     required String password,
     required String name,

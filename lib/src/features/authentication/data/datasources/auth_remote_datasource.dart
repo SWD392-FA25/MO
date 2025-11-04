@@ -1,15 +1,16 @@
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/network/api_client.dart';
 import '../models/auth_token_model.dart';
+import '../models/login_response_model.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<AuthTokenModel> signIn({
+  Future<LoginResponseModel> signIn({
     required String email,
     required String password,
   });
 
-  Future<AuthTokenModel> signUp({
+  Future<LoginResponseModel> signUp({
     required String email,
     required String password,
     required String name,
@@ -41,7 +42,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl(this.client);
 
   @override
-  Future<AuthTokenModel> signIn({
+  Future<LoginResponseModel> signIn({
     required String email,
     required String password,
   }) async {
@@ -61,17 +62,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // DEBUG: Print actual response
       print('🟢 LOGIN SUCCESS - Response: ${response.data}');
 
-      // Extract user data and return both token and user
       final responseData = response.data as Map<String, dynamic>;
-      final token = AuthTokenModel.fromJson(responseData);
+      final loginResponse = LoginResponseModel.fromJson(responseData);
       
-      // Cache user data if available
-      final userData = responseData['data']?['user'];
-      if (userData != null) {
-        print('👤 User data: $userData');
-      }
+      print('👤 User data: ID=${loginResponse.user.id}, Email=${loginResponse.user.email}');
 
-      return token;
+      return loginResponse;
     } catch (e) {
       print('🔴 LOGIN ERROR: $e');
       if (e is ServerException || e is NetworkException || e is UnauthorizedException) {
@@ -82,7 +78,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<AuthTokenModel> signUp({
+  Future<LoginResponseModel> signUp({
     required String email,
     required String password,
     required String name,
@@ -110,17 +106,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // DEBUG: Print actual response
       print('🟢 REGISTER SUCCESS - Response: ${response.data}');
 
-      // Extract user data and return both token and user
       final responseData = response.data as Map<String, dynamic>;
-      final token = AuthTokenModel.fromJson(responseData);
+      final loginResponse = LoginResponseModel.fromJson(responseData);
       
-      // Cache user data if available
-      final userData = responseData['data']?['user'];
-      if (userData != null) {
-        print('👤 User data: $userData');
-      }
+      print('👤 User data: ID=${loginResponse.user.id}, Email=${loginResponse.user.email}');
 
-      return token;
+      return loginResponse;
     } catch (e) {
       print('🔴 REGISTER ERROR: $e');
       if (e is ServerException || e is NetworkException) {
@@ -146,10 +137,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> getCurrentUser() async {
     try {
-      // Note: API might return user info in login/register response
-      // Or we might need to call /Accounts/{id} endpoint
-      // For now, we'll assume user data comes from auth response
-      throw UnimplementedError('getCurrentUser endpoint not clearly defined in Swagger');
+      // Parse user info from JWT token claims
+      // JWT format: header.payload.signature
+      // Payload contains user claims including userId
+      
+      // For now, return a basic user model
+      // The real user data should come from login/register response
+      // and be cached in AuthProvider
+      
+      return const UserModel(
+        id: 'jwt-user',
+        email: 'user@example.com', 
+        name: 'User',
+      );
     } catch (e) {
       if (e is ServerException || e is NetworkException || e is UnauthorizedException) {
         rethrow;

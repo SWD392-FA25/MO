@@ -1,15 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
+import 'package:igcse_learning_hub/src/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:igcse_learning_hub/src/features/profile/presentation/providers/profile_provider.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/app_logo.dart';
 import 'package:igcse_learning_hub/src/theme/design_tokens.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProfile();
+    });
+  }
+
+  Future<void> _loadProfile() async {
+    final authProvider = context.read<AuthProvider>();
+    final profileProvider = context.read<ProfileProvider>();
+    
+    if (authProvider.currentUser != null && 
+        authProvider.currentUser!.id != 'temp' &&
+        authProvider.currentUser!.id != 'jwt-user') {
+      await profileProvider.loadProfile(authProvider.currentUser!.id);
+    } else {
+      // User ID not available yet, skip profile load
+      // This happens when user data is not properly parsed from login response
+      print('⚠️ User ID not available, skipping profile load');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final authProvider = context.watch<AuthProvider>();
+    final profileProvider = context.watch<ProfileProvider>();
+    final profile = profileProvider.profile;
+    
+    // Fallback to auth user if profile not loaded
+    final displayName = profile?.fullName ?? 
+                       profile?.userName ?? 
+                       authProvider.currentUser?.name ?? 
+                       'User';
+    final displayEmail = profile?.email ?? 
+                        authProvider.currentUser?.email ?? 
+                        '';
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -21,50 +64,74 @@ class ProfilePage extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: const [
-                BoxShadow(
-                  color: AppColors.cardShadow,
-                  blurRadius: 18,
-                  offset: Offset(0, 12),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                const AppLogo(size: 72),
-                const SizedBox(height: 12),
-                Text(
-                  'Shirayuki Luna',
-                  style: textTheme.titleLarge,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'IGCSE Student • STEM & Creative Arts',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+      body: profileProvider.isLoading && profile == null
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadProfile,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.cardShadow,
+                          blurRadius: 18,
+                          offset: Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Avatar
+                        CircleAvatar(
+                          radius: 48,
+                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                          backgroundImage: profile?.avatarUrl != null
+                              ? NetworkImage(profile!.avatarUrl!)
+                              : null,
+                          child: profile?.avatarUrl == null
+                              ? const Icon(Icons.person,
+                                  size: 48, color: AppColors.primary)
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          displayName,
+                          style: textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          displayEmail,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (profile?.phoneNumber != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            profile!.phoneNumber!,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: const [
+                            _ProfileStat(value: '0', label: 'Courses'),
+                            _ProfileStat(value: '0', label: 'Certificates'),
+                            _ProfileStat(value: '0', label: 'Badges'),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: const [
-                    _ProfileStat(value: '12', label: 'Courses'),
-                    _ProfileStat(value: '7', label: 'Certificates'),
-                    _ProfileStat(value: '18', label: 'Badges'),
-                  ],
-                ),
-              ],
-            ),
-          ),
           const SizedBox(height: 24),
           _ProfileMenuSection(
             title: 'Học tập',
@@ -99,12 +166,39 @@ class ProfilePage extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () async {
+              // Show confirmation dialog
+              final shouldLogout = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Đăng xuất'),
+                  content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('Huỷ'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('Đăng xuất'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (shouldLogout == true && context.mounted) {
+                await context.read<AuthProvider>().signOut();
+                if (context.mounted) {
+                  context.go('/auth/sign-in');
+                }
+              }
+            },
             icon: const Icon(Icons.logout_rounded),
             label: const Text('Đăng xuất'),
           ),
         ],
       ),
+            ),
     );
   }
 }
@@ -117,57 +211,166 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final _nameController = TextEditingController(text: 'Shirayuki Luna');
-  final _emailController = TextEditingController(text: 'luna@igcse.app');
-  final _bioController =
-      TextEditingController(text: 'Graphic Design & STEM learner');
+  final _formKey = GlobalKey<FormState>();
+  final _fullNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileProvider = context.read<ProfileProvider>();
+      final profile = profileProvider.profile;
+      
+      if (profile != null) {
+        _fullNameController.text = profile.fullName ?? '';
+        _phoneController.text = profile.phoneNumber ?? '';
+        _addressController.text = profile.address ?? '';
+      }
+    });
+  }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _bioController.dispose();
+    _fullNameController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSave() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final authProvider = context.read<AuthProvider>();
+    final profileProvider = context.read<ProfileProvider>();
+    
+    if (authProvider.currentUser == null) return;
+
+    // Check if we have a valid user ID
+    final userId = authProvider.currentUser!.id;
+    
+    // DEBUG: Print user ID
+    print('🔍 User ID: "$userId" (length: ${userId.length})');
+    print('🔍 User Email: ${authProvider.currentUser!.email}');
+    print('🔍 User Name: ${authProvider.currentUser!.name}');
+    
+    if (userId.isEmpty || userId == 'temp' || userId == 'jwt-user') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('User ID không hợp lệ: "$userId"'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Include all required fields
+    final currentProfile = profileProvider.profile;
+    final currentUser = authProvider.currentUser!;
+    
+    final success = await profileProvider.updateProfile(
+      userId,
+      {
+        'fullName': _fullNameController.text.trim(),
+        'phoneNumber': _phoneController.text.trim(),
+        'address': _addressController.text.trim(),
+        // Include email from profile or auth user
+        'email': currentProfile?.email ?? currentUser.email,
+        // Include userName if available
+        if (currentProfile?.userName != null) 
+          'userName': currentProfile!.userName,
+      },
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã cập nhật hồ sơ thành công'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      context.pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(profileProvider.errorMessage ?? 'Có lỗi xảy ra'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final profileProvider = context.watch<ProfileProvider>();
+    final profile = profileProvider.profile;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chỉnh sửa hồ sơ'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Họ và tên'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _bioController,
-              minLines: 3,
-              maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Giới thiệu ngắn'),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đã cập nhật hồ sơ')),
-                );
-                context.pop();
-              },
-              child: const Text('Lưu thay đổi'),
-            ),
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              // Email (read-only)
+              TextFormField(
+                initialValue: profile?.email ?? '',
+                enabled: false,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  helperText: 'Email không thể thay đổi',
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Full Name
+              TextFormField(
+                controller: _fullNameController,
+                decoration: const InputDecoration(labelText: 'Họ và tên'),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Vui lòng nhập họ tên';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              // Phone Number
+              TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'Số điện thoại'),
+              ),
+              const SizedBox(height: 16),
+              // Address
+              TextFormField(
+                controller: _addressController,
+                minLines: 2,
+                maxLines: 3,
+                decoration: const InputDecoration(labelText: 'Địa chỉ'),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: profileProvider.isLoading ? null : _handleSave,
+                  child: profileProvider.isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Lưu thay đổi'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

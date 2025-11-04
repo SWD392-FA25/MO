@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/di/injection.dart';
+import 'features/authentication/presentation/providers/auth_provider.dart';
 import 'features/authentication/presentation/pages/auth_completion_page.dart';
 import 'features/authentication/presentation/pages/auth_welcome_page.dart';
 import 'features/authentication/presentation/pages/create_new_password_page.dart';
@@ -27,8 +29,48 @@ import 'features/splash/presentation/pages/splash_page.dart';
 import 'features/transactions/presentation/pages/transactions_page.dart';
 
 GoRouter buildRouter() {
+  final authProvider = getIt<AuthProvider>();
+
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: authProvider,
+    redirect: (context, state) {
+      final authProvider = getIt<AuthProvider>();
+      final isAuthenticated = authProvider.isAuthenticated;
+      final isInitialized = authProvider.isInitialized;
+      final location = state.matchedLocation;
+
+      // Don't redirect during initialization or on splash
+      if (!isInitialized || location == '/splash') {
+        return null;
+      }
+
+      // Protected routes (require authentication)
+      final protectedRoutes = [
+        '/my-courses',
+        '/profile',
+        '/transactions',
+        '/lunaby',
+      ];
+
+      final isProtectedRoute = protectedRoutes.any(
+        (route) => location.startsWith(route),
+      );
+
+      // Redirect unauthenticated users trying to access protected routes
+      if (!isAuthenticated && isProtectedRoute) {
+        return '/auth/sign-in';
+      }
+
+      // Redirect authenticated users away from auth pages
+      if (isAuthenticated && 
+          location.startsWith('/auth') && 
+          location != '/auth/sign-out') {
+        return '/dashboard';
+      }
+
+      return null; // No redirect needed
+    },
     routes: [
       GoRoute(
         path: '/splash',

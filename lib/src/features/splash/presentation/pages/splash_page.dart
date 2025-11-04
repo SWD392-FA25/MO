@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
+import 'package:igcse_learning_hub/src/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:igcse_learning_hub/src/shared/presentation/widgets/app_logo.dart';
 import 'package:igcse_learning_hub/src/theme/design_tokens.dart';
 
@@ -25,10 +27,36 @@ class _SplashPageState extends State<SplashPage>
     );
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
     _controller.forward();
-    Future.delayed(const Duration(milliseconds: 2200), () {
-      if (!mounted) return;
+    _checkAuthAndNavigate();
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    final authProvider = context.read<AuthProvider>();
+    
+    try {
+      // Check authentication status with timeout
+      await authProvider.checkAuthStatus().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          // If timeout, treat as unauthenticated
+          debugPrint('Auth check timeout - treating as unauthenticated');
+        },
+      );
+    } catch (e) {
+      // If error, treat as unauthenticated
+      debugPrint('Auth check error: $e');
+    }
+    
+    // Wait for animation
+    await Future.delayed(const Duration(milliseconds: 2200));
+    if (!mounted) return;
+    
+    // Navigate based on authentication status
+    if (authProvider.isAuthenticated) {
+      context.go('/dashboard');
+    } else {
       context.go('/onboarding');
-    });
+    }
   }
 
   @override

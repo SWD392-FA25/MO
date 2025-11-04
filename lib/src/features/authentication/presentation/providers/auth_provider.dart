@@ -35,6 +35,8 @@ class AuthProvider extends ChangeNotifier {
 
   bool get isAuthenticated => _state is AuthAuthenticated;
   bool get isLoading => _state is AuthLoading;
+  bool _isInitialized = false;
+  bool get isInitialized => _isInitialized;
 
   void _setState(AuthState newState) {
     _state = newState;
@@ -53,15 +55,9 @@ class AuthProvider extends ChangeNotifier {
 
     result.fold(
       (failure) => _setState(AuthError(failure.message)),
-      (token) async {
-        // TODO: Parse user from login response instead of calling getCurrentUser
-        // For now, set a temporary authenticated state
-        _currentUser = const User(
-          id: 'temp',
-          email: 'user@example.com',
-          name: 'User',
-        );
-        _setState(AuthAuthenticated(_currentUser!));
+      (user) {
+        _currentUser = user;
+        _setState(AuthAuthenticated(user));
       },
     );
   }
@@ -85,15 +81,9 @@ class AuthProvider extends ChangeNotifier {
 
     result.fold(
       (failure) => _setState(AuthError(failure.message)),
-      (token) async {
-        // TODO: Parse user from register response instead of calling getCurrentUser
-        // For now, set a temporary authenticated state
-        _currentUser = User(
-          id: 'temp',
-          email: email,
-          name: name,
-        );
-        _setState(AuthAuthenticated(_currentUser!));
+      (user) {
+        _currentUser = user;
+        _setState(AuthAuthenticated(user));
       },
     );
   }
@@ -110,6 +100,35 @@ class AuthProvider extends ChangeNotifier {
         _setState(const AuthUnauthenticated());
       },
     );
+  }
+
+  Future<void> checkAuthStatus() async {
+    if (_isInitialized) return;
+
+    try {
+      // Try to get current user with timeout
+      final result = await getCurrentUserUseCase(NoParams()).timeout(
+        const Duration(seconds: 3),
+      );
+
+      result.fold(
+        (failure) {
+          _currentUser = null;
+          _setState(const AuthUnauthenticated());
+        },
+        (user) {
+          _currentUser = user;
+          _setState(AuthAuthenticated(user));
+        },
+      );
+    } catch (e) {
+      // If error or timeout, treat as unauthenticated
+      _currentUser = null;
+      _setState(const AuthUnauthenticated());
+    } finally {
+      _isInitialized = true;
+      notifyListeners();
+    }
   }
 
   Future<void> getCurrentUser() async {

@@ -4,16 +4,16 @@ import 'package:equatable/equatable.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/usecases/usecase.dart';
 import '../../../../../core/validators/input_validators.dart';
-import '../entities/auth_token.dart';
+import '../entities/user.dart';
 import '../repositories/auth_repository.dart';
 
-class SignIn extends UseCase<AuthToken, SignInParams> {
+class SignIn extends UseCase<User, SignInParams> {
   final AuthRepository repository;
 
   SignIn(this.repository);
 
   @override
-  Future<Either<Failure, AuthToken>> call(SignInParams params) async {
+  Future<Either<Failure, User>> call(SignInParams params) async {
     final emailError = InputValidators.email(params.email);
     if (emailError != null) {
       return Left(ValidationFailure(emailError));

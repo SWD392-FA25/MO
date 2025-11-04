@@ -24,7 +24,7 @@ class AuthRepositoryImpl implements AuthRepository {
   });
 
   @override
-  Future<Either<Failure, AuthToken>> signIn({
+  Future<Either<Failure, User>> signIn({
     required String email,
     required String password,
   }) async {
@@ -33,20 +33,17 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     try {
-      final tokenModel = await remoteDataSource.signIn(
+      final loginResponse = await remoteDataSource.signIn(
         email: email,
         password: password,
       );
 
-      await localDataSource.cacheAuthToken(tokenModel);
-      apiClient.setAuthToken(tokenModel.accessToken);
+      // Cache token and user data
+      await localDataSource.cacheAuthToken(loginResponse.token);
+      await localDataSource.cacheUserId(loginResponse.user.id);
+      apiClient.setAuthToken(loginResponse.token.accessToken);
 
-      // User data is in login response, no need to call getCurrentUser
-      // TODO: Parse user from login response and cache it
-      // For now, just return token
-      // await localDataSource.cacheUserId(user.id);
-
-      return Right(tokenModel.toEntity());
+      return Right(loginResponse.user.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));
     } on NetworkException catch (e) {
@@ -61,7 +58,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthToken>> signUp({
+  Future<Either<Failure, User>> signUp({
     required String email,
     required String password,
     required String name,
@@ -72,22 +69,19 @@ class AuthRepositoryImpl implements AuthRepository {
     }
 
     try {
-      final tokenModel = await remoteDataSource.signUp(
+      final loginResponse = await remoteDataSource.signUp(
         email: email,
         password: password,
         name: name,
         phoneNumber: phoneNumber,
       );
 
-      await localDataSource.cacheAuthToken(tokenModel);
-      apiClient.setAuthToken(tokenModel.accessToken);
+      // Cache token and user data
+      await localDataSource.cacheAuthToken(loginResponse.token);
+      await localDataSource.cacheUserId(loginResponse.user.id);
+      apiClient.setAuthToken(loginResponse.token.accessToken);
 
-      // User data is in register response, no need to call getCurrentUser
-      // TODO: Parse user from register response and cache it
-      // For now, just return token
-      // await localDataSource.cacheUserId(user.id);
-
-      return Right(tokenModel.toEntity());
+      return Right(loginResponse.user.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));
     } on NetworkException catch (e) {

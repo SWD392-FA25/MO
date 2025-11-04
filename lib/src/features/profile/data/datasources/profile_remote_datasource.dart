@@ -51,7 +51,13 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     required Map<String, dynamic> data,
   }) async {
     try {
+      print('📤 UPDATE PROFILE REQUEST: PUT /Accounts/$userId');
+      print('📤 Data: $data');
+      
       final response = await client.put('/Accounts/$userId', data: data);
+
+      print('✅ UPDATE RESPONSE: ${response.statusCode}');
+      print('✅ Response Data: ${response.data}');
 
       if (response.data == null) {
         throw ServerException('No data received from server');
@@ -62,12 +68,17 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
       if (responseData is Map<String, dynamic>) {
         profileJson = responseData['data'] ?? responseData;
+        print('✅ Profile JSON: $profileJson');
       } else {
         throw ServerException('Unexpected response format');
       }
 
-      return UserProfileModel.fromJson(profileJson);
+      final profile = UserProfileModel.fromJson(profileJson);
+      print('✅ Parsed Profile: ${profile.fullName}');
+      
+      return profile;
     } catch (e) {
+      print('❌ UPDATE PROFILE ERROR: $e');
       if (e is ServerException || e is NetworkException) {
         rethrow;
       }
