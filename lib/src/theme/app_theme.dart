@@ -57,17 +57,12 @@ ThemeData buildAppTheme() {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.surface,
       indicatorColor: AppColors.primary.withAlpha(31),
-      labelTextStyle: MaterialStateProperty.all(
-        // ignore: deprecated_member_use
+      labelTextStyle: WidgetStateProperty.all(
         baseTextTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
       ),
-      iconTheme: MaterialStateProperty.resolveWith(
-        // ignore: deprecated_member_use
+      iconTheme: WidgetStateProperty.resolveWith(
         (states) => IconThemeData(
-          color:
-              states.contains(
-                MaterialState.selected,
-              ) // ignore: deprecated_member_use
+          color: states.contains(WidgetState.selected)
               ? AppColors.primary
               : AppColors.textSecondary.withAlpha(115),
         ),
