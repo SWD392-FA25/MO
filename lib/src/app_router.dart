@@ -18,6 +18,7 @@ import 'features/catalog/presentation/pages/search_page.dart';
 import 'features/course_detail/presentation/pages/tabs/course_curriculum_page.dart';
 import 'features/course_detail/presentation/pages/tabs/course_reviews_page.dart';
 import 'features/course_detail/presentation/pages/course_detail_page.dart';
+import 'features/course_detail/presentation/pages/lesson_detail_page.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/lunaby/presentation/pages/lunaby_page.dart';
 import 'features/my_courses/presentation/pages/my_course_lessons_page.dart';
@@ -161,6 +162,15 @@ GoRouter buildRouter() {
         path: '/courses/:id/curriculum',
         builder: (context, state) =>
             CourseCurriculumPage(courseId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/courses/:courseId/lessons/:lessonId',
+        name: 'lesson_detail',
+        builder: (context, state) {
+          final courseId = state.pathParameters['courseId']!;
+          final lessonId = state.pathParameters['lessonId']!;
+          return LessonDetailPage(courseId: courseId, lessonId: lessonId);
+        },
       ),
       GoRoute(
         path: '/courses/reviews',

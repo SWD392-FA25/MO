@@ -178,11 +178,14 @@ Future<void> _setupCourses() async {
   getIt.registerLazySingleton(() => GetCourses(getIt()));
   getIt.registerLazySingleton(() => GetCourseDetail(getIt()));
   getIt.registerLazySingleton(() => GetCourseLessons(getIt()));
+  getIt.registerLazySingleton(() => GetLessonDetail(getIt()));
 
   getIt.registerFactory(
     () => CourseProvider(
       getCoursesUseCase: getIt(),
       getCourseDetailUseCase: getIt(),
+      getCourseLessonsUseCase: getIt(),
+      getLessonDetailUseCase: getIt(),
     ),
   );
 
