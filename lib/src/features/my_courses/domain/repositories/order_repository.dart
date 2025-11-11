@@ -8,9 +8,9 @@ abstract class OrderRepository {
   
   Future<Either<Failure, Order>> getOrderById(String orderId);
   
-  Future<Either<Failure, Order>> getOrderStatus(String orderId);
+  Future<Either<Failure, String>> getOrderStatus(String orderId);
   
-  Future<Either<Failure, Order>> checkoutOrder(String orderId);
+  Future<Either<Failure, String>> checkoutOrder(String orderId);
   
-  Future<Either<Failure, Order>> retryCheckout(String orderId);
+  Future<Either<Failure, String>> retryCheckout(String orderId);
 }

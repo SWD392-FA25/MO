@@ -21,7 +21,7 @@ import 'src/features/catalog/domain/usecases/get_livestreams.dart';
 import 'src/features/catalog/domain/usecases/get_packages.dart';
 import 'src/features/my_courses/domain/usecases/get_my_enrollments.dart';
 import 'src/features/my_courses/presentation/providers/assignment_provider.dart';
-import 'src/features/my_courses/domain/usecases/get_my_orders.dart';
+import 'src/features/transactions/domain/usecases/get_my_orders.dart';
 
 import 'src/features/quiz/domain/usecases/get_my_quiz_attempts.dart';
 import 'src/features/transactions/domain/usecases/get_active_payment_methods.dart';
@@ -192,7 +192,7 @@ Future<void> _testAPIs() async {
   try {
     print('\n🛒 Test 6: GET /me/orders');
     final getOrdersUseCase = getIt<GetMyOrders>();
-    final result = await getOrdersUseCase.call();
+    final result = await getOrdersUseCase.call(NoParams());
 
     result.fold(
       (failure) {
@@ -286,6 +286,7 @@ class IGCSELearningHub extends StatelessWidget {
         
         // Transactions
         ChangeNotifierProvider(create: (_) => getIt<PaymentProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<OrderProvider>()),
         
         // Quiz
         ChangeNotifierProvider(create: (_) => getIt<QuizProvider>()),

@@ -7,11 +7,11 @@ abstract class OrderRemoteDataSource {
   
   Future<OrderModel> getOrderById(String orderId);
   
-  Future<OrderModel> getOrderStatus(String orderId);
+  Future<String> getOrderStatus(String orderId);
   
-  Future<OrderModel> checkoutOrder(String orderId);
+  Future<String> checkoutOrder(String orderId, {String? paymentMethod});
   
-  Future<OrderModel> retryCheckout(String orderId);
+  Future<String> retryCheckout(String orderId);
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -78,7 +78,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   }
 
   @override
-  Future<OrderModel> getOrderStatus(String orderId) async {
+  Future<String> getOrderStatus(String orderId) async {
     try {
       final response = await client.get('/me/orders/$orderId/status');
 
@@ -87,15 +87,14 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       }
 
       final data = response.data;
-      Map<String, dynamic> orderJson;
-
+      
       if (data is Map<String, dynamic>) {
-        orderJson = data['data'] ?? data;
-      } else {
-        throw ServerException('Unexpected response format');
+        return data['status'] ?? data['data']?['status'] ?? 'unknown';
+      } else if (data is String) {
+        return data;
       }
 
-      return OrderModel.fromJson(orderJson);
+      throw ServerException('Unexpected response format');
     } catch (e) {
       if (e is ServerException || e is NetworkException) {
         rethrow;
@@ -105,24 +104,31 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   }
 
   @override
-  Future<OrderModel> checkoutOrder(String orderId) async {
+  Future<String> checkoutOrder(String orderId, {String? paymentMethod}) async {
     try {
-      final response = await client.post('/me/orders/$orderId/checkout', data: {});
+      final response = await client.post(
+        '/me/orders/$orderId/checkout',
+        data: {
+          if (paymentMethod != null) 'paymentMethod': paymentMethod,
+        },
+      );
 
       if (response.data == null) {
         throw ServerException('No data received from server');
       }
 
       final data = response.data;
-      Map<String, dynamic> orderJson;
 
       if (data is Map<String, dynamic>) {
-        orderJson = data['data'] ?? data;
-      } else {
-        throw ServerException('Unexpected response format');
+        return data['paymentUrl'] ?? 
+               data['checkoutUrl'] ?? 
+               data['url'] ?? 
+               '';
+      } else if (data is String) {
+        return data;
       }
 
-      return OrderModel.fromJson(orderJson);
+      throw ServerException('Unexpected response format');
     } catch (e) {
       if (e is ServerException || e is NetworkException) {
         rethrow;
@@ -132,7 +138,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   }
 
   @override
-  Future<OrderModel> retryCheckout(String orderId) async {
+  Future<String> retryCheckout(String orderId) async {
     try {
       final response = await client.post('/me/orders/$orderId/retry-checkout', data: {});
 
@@ -141,15 +147,17 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       }
 
       final data = response.data;
-      Map<String, dynamic> orderJson;
 
       if (data is Map<String, dynamic>) {
-        orderJson = data['data'] ?? data;
-      } else {
-        throw ServerException('Unexpected response format');
+        return data['paymentUrl'] ?? 
+               data['checkoutUrl'] ?? 
+               data['url'] ?? 
+               '';
+      } else if (data is String) {
+        return data;
       }
 
-      return OrderModel.fromJson(orderJson);
+      throw ServerException('Unexpected response format');
     } catch (e) {
       if (e is ServerException || e is NetworkException) {
         rethrow;

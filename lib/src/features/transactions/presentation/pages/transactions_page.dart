@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../my_courses/presentation/providers/order_provider.dart';
-import '../../../my_courses/domain/entities/order.dart';
+import '../providers/order_provider.dart';
+import '../../domain/entities/order.dart';
 import 'package:igcse_learning_hub/src/theme/design_tokens.dart';
 
 class TransactionsPage extends StatefulWidget {
@@ -151,7 +151,7 @@ class _OrderCard extends StatelessWidget {
     required this.onTap,
   });
 
-  final Order order;
+  final OrderEntity order;
   final Function(dynamic) onTap;
 
   @override

@@ -5,7 +5,6 @@ import '../../../../../core/error/failures.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../datasources/order_remote_datasource.dart';
-import '../models/order_model.dart';
 
 class OrderRepositoryImpl implements OrderRepository {
   final OrderRemoteDataSource remoteDataSource;
@@ -41,10 +40,10 @@ class OrderRepositoryImpl implements OrderRepository {
   }
 
   @override
-  Future<Either<Failure, Order>> getOrderStatus(String orderId) async {
+  Future<Either<Failure, String>> getOrderStatus(String orderId) async {
     try {
-      final order = await remoteDataSource.getOrderStatus(orderId);
-      return Right(order.toEntity());
+      final status = await remoteDataSource.getOrderStatus(orderId);
+      return Right(status);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
@@ -55,10 +54,10 @@ class OrderRepositoryImpl implements OrderRepository {
   }
 
   @override
-  Future<Either<Failure, Order>> checkoutOrder(String orderId) async {
+  Future<Either<Failure, String>> checkoutOrder(String orderId) async {
     try {
-      final order = await remoteDataSource.checkoutOrder(orderId);
-      return Right(order.toEntity());
+      final checkoutUrl = await remoteDataSource.checkoutOrder(orderId);
+      return Right(checkoutUrl);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
@@ -69,10 +68,10 @@ class OrderRepositoryImpl implements OrderRepository {
   }
 
   @override
-  Future<Either<Failure, Order>> retryCheckout(String orderId) async {
+  Future<Either<Failure, String>> retryCheckout(String orderId) async {
     try {
-      final order = await remoteDataSource.retryCheckout(orderId);
-      return Right(order.toEntity());
+      final checkoutUrl = await remoteDataSource.retryCheckout(orderId);
+      return Right(checkoutUrl);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {

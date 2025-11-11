@@ -57,11 +57,8 @@ import '../../src/features/transactions/data/repositories/payment_repository_imp
 import '../../src/features/transactions/domain/repositories/order_repository.dart';
 import '../../src/features/transactions/domain/repositories/payment_repository.dart';
 import '../../src/features/transactions/domain/usecases/checkout_order.dart';
-import '../../src/features/my_courses/data/datasources/assignment_remote_datasource.dart';
-import '../../src/features/my_courses/data/repositories/assignment_repository_impl.dart';
-import '../../src/features/my_courses/domain/repositories/assignment_repository.dart';
 import '../../src/features/transactions/domain/usecases/create_order.dart';
-import '../../src/features/my_courses/domain/usecases/get_my_orders.dart';
+import '../../src/features/transactions/domain/usecases/get_my_orders.dart';
 import '../../src/features/my_courses/domain/usecases/submit_assignment.dart';
 import '../../src/features/transactions/domain/usecases/create_vnpay_checkout.dart';
 import '../../src/features/catalog/data/datasources/package_remote_datasource.dart';

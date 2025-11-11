@@ -24,12 +24,14 @@ class OrderProvider extends ChangeNotifier {
   Order? _selectedOrder;
   bool _isLoading = false;
   String? _errorMessage;
+  String? _checkoutUrl;
 
   // Getters
   List<Order> get orders => List.unmodifiable(_orders);
   Order? get selectedOrder => _selectedOrder;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  String? get checkoutUrl => _checkoutUrl;
 
   // Get all orders
   Future<void> loadOrders() async {
@@ -90,13 +92,8 @@ class OrderProvider extends ChangeNotifier {
         notifyListeners();
         return false;
       },
-      (order) {
-        // Update order in the list
-        final index = _orders.indexWhere((o) => o.id == order.id);
-        if (index != -1) {
-          _orders[index] = order;
-        }
-        _selectedOrder = order;
+      (checkoutUrl) {
+        _checkoutUrl = checkoutUrl;
         _isLoading = false;
         notifyListeners();
         return true;
@@ -119,13 +116,8 @@ class OrderProvider extends ChangeNotifier {
         notifyListeners();
         return false;
       },
-      (order) {
-        // Update order in the list
-        final index = _orders.indexWhere((o) => o.id == order.id);
-        if (index != -1) {
-          _orders[index] = order;
-        }
-        _selectedOrder = order;
+      (checkoutUrl) {
+        _checkoutUrl = checkoutUrl;
         _isLoading = false;
         notifyListeners();
         return true;

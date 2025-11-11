@@ -1,7 +1,6 @@
-import 'package:dartz/dartz.dart' hide Order;
+import 'package:dartz/dartz.dart';
 
 import '../../../../../core/error/failures.dart';
-import '../entities/order.dart';
 import '../repositories/order_repository.dart';
 
 class RetryCheckout {
@@ -9,7 +8,7 @@ class RetryCheckout {
 
   RetryCheckout(this.repository);
 
-  Future<Either<Failure, Order>> call(String orderId) async {
+  Future<Either<Failure, String>> call(String orderId) async {
     return await repository.retryCheckout(orderId);
   }
 }

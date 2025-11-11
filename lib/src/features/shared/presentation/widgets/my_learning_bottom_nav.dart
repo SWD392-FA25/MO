@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../my_courses/presentation/providers/order_provider.dart';
-import '../../../theme/app_theme.dart';
 
 class MyLearningBottomNav extends StatelessWidget {
   const MyLearningBottomNav({super.key});
@@ -26,31 +24,31 @@ class MyLearningBottomNav extends StatelessWidget {
             _NavItem(
               icon: Icons.home,
               label: 'Trang chủ',
-              onTap: () => GoRouter.of(context).go('/dashboard'),
+              onTap: () => context.go('/dashboard'),
               isActive: _isActiveRoute(context, '/dashboard'),
             ),
             _NavItem(
               icon: Icons.school,
               label: 'Khóa học',
-              onTap: () => GoRouter.of(context).go('/catalog'),
+              onTap: () => context.go('/catalog'),
               isActive: _isActiveRoute(context, '/catalog'),
             ),
             _NavItem(
               icon: Icons.book,
               label: 'My Courses',
-              onTap: () => GoRouter.of(context).go('/my-courses'),
+              onTap: () => context.go('/my-courses'),
               isActive: _isActiveRoute(context, '/my-courses'),
             ),
             _NavItem(
               icon: Icons.receipt_long,
               label: 'Đơn hàng',
-              onTap: () => GoRouter.of(context).go('/transactions'),
+              onTap: () => context.go('/transactions'),
               isActive: _isActiveRoute(context, '/transactions'),
             ),
             _NavItem(
               icon: Icons.person,
               label: 'Tài khoản',
-              onTap: => GoRouter.of(context).go('/profile'),
+              onTap: () => context.go('/profile'),
               isActive: _isActiveRoute(context, '/profile'),
             ),
           ],
@@ -60,8 +58,8 @@ class MyLearningBottomNav extends StatelessWidget {
   }
 
   bool _isActiveRoute(BuildContext context, String routePath) {
-    return GoRouter.of(context).location.path == routePath ||
-           GoRouter.of(context).location.path == '$routePath/';
+    return GoRouter.of(context).routeInformationProvider.value.location == routePath ||
+           GoRouter.of(context).routeInformationProvider.value.location == '$routePath/';
   }
 }
 
@@ -96,14 +94,14 @@ class _NavItem extends StatelessWidget {
               Icon(
                 icon,
                 size: 20,
-                color: isActive ? AppColors.primary : AppColors.textSecondary,
+                color: isActive ? Theme.of(context).primaryColor : Colors.grey,
               ),
               const SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 10,
-                  color: isActive ? AppColors.primary : AppColors.textSecondary,
+                  color: isActive ? Theme.of(context).primaryColor : Colors.grey,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),

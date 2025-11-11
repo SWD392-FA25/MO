@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../presentation/widgets/my_learning_bottom_nav.dart';
-import '../../theme/app_theme.dart';
+import '../widgets/my_learning_bottom_nav.dart';
+import '../../../../theme/app_theme.dart';
 
 class IntegrationMainPage extends StatelessWidget {
   const IntegrationMainPage({super.key});
