@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:igcse_learning_hub/src/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:igcse_learning_hub/src/features/authentication/presentation/providers/auth_state.dart';
@@ -22,6 +23,15 @@ class _SignUpPageState extends State<SignUpPage> {
   final _passwordController = TextEditingController();
   bool _agreed = false;
   bool _obscurePassword = true;
+  bool _isGoogleSigningIn = false;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+      'profile',
+      'openid',
+    ],
+    hostedDomain: '',
+  );
 
   @override
   void dispose() {
@@ -72,6 +82,50 @@ class _SignUpPageState extends State<SignUpPage> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      print('🔍 DEBUG: Starting Google Sign-In (Sign Up)');
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      print('🔍 DEBUG: Google Sign-In result: ${googleUser != null}');
+      
+      if (googleUser == null) {
+        print('🔍 DEBUG: User cancelled Google Sign-In');
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final authProvider = context.read<AuthProvider>();
+      await authProvider.googleSignInWithGoogle(
+        idToken: googleAuth.idToken ?? '',
+        accessToken: googleAuth.accessToken ?? '',
+      );
+
+      if (!mounted) return;
+
+      final state = authProvider.state;
+      if (state is AuthAuthenticated) {
+        context.go('/dashboard');
+      } else if (state is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -225,15 +279,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Google Sign In coming soon'),
-                            ),
-                          );
-                        },
+                  onPressed: isLoading ? null : _handleGoogleSignIn,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFEA4235),
                     foregroundColor: Colors.white,

@@ -8,6 +8,7 @@ import '../../src/features/authentication/data/repositories/auth_repository_impl
 import '../../src/features/authentication/domain/repositories/auth_repository.dart';
 import '../../src/features/authentication/domain/usecases/forgot_password.dart';
 import '../../src/features/authentication/domain/usecases/get_current_user.dart';
+import '../../src/features/authentication/domain/usecases/google_sign_in.dart';
 import '../../src/features/authentication/domain/usecases/sign_in.dart';
 import '../../src/features/authentication/domain/usecases/sign_out.dart';
 import '../../src/features/authentication/domain/usecases/sign_up.dart';
@@ -143,6 +144,7 @@ Future<void> _setupAuthentication() async {
 
   getIt.registerLazySingleton(() => SignIn(getIt()));
   getIt.registerLazySingleton(() => SignUp(getIt()));
+  getIt.registerLazySingleton(() => GoogleSignIn(getIt()));
   getIt.registerLazySingleton(() => SignOut(getIt()));
   getIt.registerLazySingleton(() => GetCurrentUser(getIt()));
   getIt.registerLazySingleton(() => ForgotPassword(getIt()));
@@ -152,6 +154,7 @@ Future<void> _setupAuthentication() async {
     () => AuthProvider(
       signInUseCase: getIt(),
       signUpUseCase: getIt(),
+      googleSignInUseCase: getIt(),
       signOutUseCase: getIt(),
       getCurrentUserUseCase: getIt(),
       forgotPasswordUseCase: getIt(),

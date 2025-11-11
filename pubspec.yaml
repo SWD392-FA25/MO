@@ -13,6 +13,7 @@ dependencies:
   go_router: ^14.2.7
   provider: ^6.1.2
   google_fonts: ^6.2.1
+  google_sign_in: ^6.2.1
   
   # Architecture & DI
   get_it: ^7.6.4

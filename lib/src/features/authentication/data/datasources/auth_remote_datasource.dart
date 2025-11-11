@@ -17,7 +17,14 @@ abstract class AuthRemoteDataSource {
     String? phoneNumber,
   });
 
+  Future<LoginResponseModel> googleSignIn({
+    required String idToken,
+    required String accessToken,
+  });
+
   Future<void> signOut();
+
+  Future<void> revokeToken(String refreshToken);
 
   Future<UserModel> getCurrentUser();
 
@@ -74,6 +81,45 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         rethrow;
       }
       throw ServerException('Failed to sign in: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<LoginResponseModel> googleSignIn({
+    required String idToken,
+    required String accessToken,
+  }) async {
+    try {
+      print('🔍 [DATASOURCE] Starting Google Sign-In request');
+      
+      final requestData = {
+        'FirebaseIdToken': idToken,
+        'accessToken': accessToken,
+      };
+      
+      print('🔍 [DATASOURCE] Request data keys: ${requestData.keys.toList()}');
+      print('🔍 [DATASOURCE] FirebaseIdToken length: ${idToken.length}');
+      print('🔍 [DATASOURCE] AccessToken length: ${accessToken.length}');
+      print('🔍 [DATASOURCE] FirebaseIdToken preview: ${idToken.substring(0, 100)}...');
+      
+      final response = await client.post(
+        '/Authentication/google-login',
+        data: requestData,
+      );
+
+      if (response.data == null) {
+        throw ServerException('No data received from server');
+      }
+
+      final responseData = response.data as Map<String, dynamic>;
+      print('🔍 [DATASOURCE] Response data: $responseData');
+      return LoginResponseModel.fromJson(responseData);
+    } catch (e) {
+      print('🔍 [DATASOURCE] Error in Google Sign-In: ${e.toString()}');
+      if (e is ServerException || e is NetworkException || e is UnauthorizedException) {
+        rethrow;
+      }
+      throw ServerException('Failed to sign in with Google: ${e.toString()}');
     }
   }
 
@@ -135,6 +181,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
+  Future<void> revokeToken(String refreshToken) async {
+    try {
+      await client.post(
+        '/Authentication/revoke',
+        data: {'refreshToken': refreshToken},
+      );
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Failed to revoke token: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<UserModel> getCurrentUser() async {
     try {
       // Parse user info from JWT token claims
@@ -162,7 +223,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<AuthTokenModel> refreshToken(String refreshToken) async {
     try {
       final response = await client.post(
-        '/auth/refresh',
+        '/Authentication/refresh',
         data: {'refreshToken': refreshToken},
       );
 
