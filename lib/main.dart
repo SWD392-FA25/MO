@@ -20,9 +20,12 @@ import 'src/features/transactions/presentation/providers/payment_provider.dart';
 import 'src/features/catalog/domain/usecases/get_livestreams.dart';
 import 'src/features/catalog/domain/usecases/get_packages.dart';
 import 'src/features/my_courses/domain/usecases/get_my_enrollments.dart';
+import 'src/features/my_courses/presentation/providers/assignment_provider.dart';
+import 'src/features/my_courses/domain/usecases/get_my_orders.dart';
+
 import 'src/features/quiz/domain/usecases/get_my_quiz_attempts.dart';
 import 'src/features/transactions/domain/usecases/get_active_payment_methods.dart';
-import 'src/features/transactions/domain/usecases/get_my_orders.dart';
+
 import 'src/state/app_state.dart';
 import 'src/theme/app_theme.dart';
 
@@ -34,7 +37,7 @@ void main() async {
   await setupDependencies();
 
   // 🧪 TEST APIs - Comment out sau khi test xong
-  // await _testAPIs();  // ✅ APIs tested and working!
+  await _testAPIs();  // ✅ APIs tested and working!
 
   runApp(const IGCSELearningHub());
 }
@@ -189,7 +192,7 @@ Future<void> _testAPIs() async {
   try {
     print('\n🛒 Test 6: GET /me/orders');
     final getOrdersUseCase = getIt<GetMyOrders>();
-    final result = await getOrdersUseCase.call(NoParams());
+    final result = await getOrdersUseCase.call();
 
     result.fold(
       (failure) {
@@ -279,9 +282,9 @@ class IGCSELearningHub extends StatelessWidget {
         // My Courses
         ChangeNotifierProvider(create: (_) => getIt<EnrollmentProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<MyCourseProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<AssignmentProvider>()),
         
         // Transactions
-        ChangeNotifierProvider(create: (_) => getIt<OrderProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<PaymentProvider>()),
         
         // Quiz

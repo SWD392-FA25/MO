@@ -24,8 +24,14 @@ import '../../src/features/catalog/presentation/providers/course_provider.dart';
 import '../../src/features/catalog/presentation/providers/livestream_provider.dart';
 import '../../src/features/catalog/presentation/providers/package_provider.dart';
 import '../../src/features/my_courses/data/datasources/enrollment_remote_datasource.dart';
+import '../../src/features/my_courses/data/datasources/assignment_remote_datasource.dart';
+import '../../src/features/my_courses/data/repositories/assignment_repository_impl.dart';
+import '../../src/features/my_courses/domain/repositories/assignment_repository.dart';
 import '../../src/features/my_courses/presentation/providers/enrollment_provider.dart';
+import '../../src/features/my_courses/domain/usecases/get_my_course_detail.dart';
 import '../../src/features/my_courses/presentation/providers/my_course_provider.dart';
+import '../../src/features/my_courses/presentation/providers/assignment_provider.dart';
+import '../../src/features/my_courses/domain/usecases/get_assignment_submissions.dart';
 import '../../src/features/profile/presentation/providers/profile_provider.dart';
 import '../../src/features/quiz/presentation/providers/quiz_provider.dart';
 import '../../src/features/transactions/presentation/providers/order_provider.dart';
@@ -51,37 +57,39 @@ import '../../src/features/transactions/data/repositories/payment_repository_imp
 import '../../src/features/transactions/domain/repositories/order_repository.dart';
 import '../../src/features/transactions/domain/repositories/payment_repository.dart';
 import '../../src/features/transactions/domain/usecases/checkout_order.dart';
+import '../../src/features/my_courses/data/datasources/assignment_remote_datasource.dart';
+import '../../src/features/my_courses/data/repositories/assignment_repository_impl.dart';
+import '../../src/features/my_courses/domain/repositories/assignment_repository.dart';
 import '../../src/features/transactions/domain/usecases/create_order.dart';
+import '../../src/features/my_courses/domain/usecases/get_my_orders.dart';
+import '../../src/features/my_courses/domain/usecases/submit_assignment.dart';
 import '../../src/features/transactions/domain/usecases/create_vnpay_checkout.dart';
-import '../../src/features/transactions/domain/usecases/get_my_orders.dart';
 import '../../src/features/catalog/data/datasources/package_remote_datasource.dart';
 import '../../src/features/catalog/data/repositories/package_repository_impl.dart';
 import '../../src/features/catalog/domain/repositories/package_repository.dart';
 import '../../src/features/catalog/domain/usecases/get_package_detail.dart';
-import '../../src/features/catalog/domain/usecases/get_packages.dart';
 import '../../src/features/quiz/data/datasources/quiz_remote_datasource.dart';
 import '../../src/features/quiz/data/repositories/quiz_repository_impl.dart';
+import '../../src/features/catalog/domain/usecases/get_packages.dart';
 import '../../src/features/quiz/domain/repositories/quiz_repository.dart';
 import '../../src/features/quiz/domain/usecases/create_quiz_attempt.dart';
-import '../../src/features/quiz/domain/usecases/get_my_quiz_attempts.dart';
-import '../../src/features/quiz/domain/usecases/get_quiz_for_take.dart';
 import '../../src/features/quiz/domain/usecases/submit_quiz_attempt.dart';
-import '../../src/features/my_courses/data/datasources/assignment_remote_datasource.dart';
-import '../../src/features/my_courses/data/repositories/assignment_repository_impl.dart';
-import '../../src/features/my_courses/domain/repositories/assignment_repository.dart';
-import '../../src/features/my_courses/domain/usecases/submit_assignment.dart';
-import '../../src/features/catalog/data/datasources/livestream_remote_datasource.dart';
+import '../../src/features/quiz/domain/usecases/get_quiz_for_take.dart';
+
+import '../../src/features/quiz/domain/usecases/get_my_quiz_attempts.dart';
 import '../../src/features/catalog/data/repositories/livestream_repository_impl.dart';
+import '../../src/features/catalog/data/datasources/livestream_remote_datasource.dart';
 import '../../src/features/catalog/domain/repositories/livestream_repository.dart';
 import '../../src/features/catalog/domain/usecases/get_livestream_detail.dart';
 import '../../src/features/catalog/domain/usecases/get_livestreams.dart';
-import '../../src/features/transactions/data/datasources/payment_method_remote_datasource.dart';
 import '../../src/features/transactions/data/repositories/payment_method_repository_impl.dart';
+import '../../src/features/transactions/data/datasources/payment_method_remote_datasource.dart';
 import '../../src/features/transactions/domain/repositories/payment_method_repository.dart';
-import '../../src/features/transactions/domain/usecases/get_active_payment_methods.dart';
 import '../../src/features/transactions/domain/usecases/get_payment_methods.dart';
+import '../../src/features/transactions/domain/usecases/get_active_payment_methods.dart';
 import '../network/api_client.dart';
 import '../network/network_info.dart';
+
 import '../storage/secure_storage.dart';
 
 final getIt = GetIt.instance;
@@ -217,6 +225,7 @@ Future<void> _setupMyCourses() async {
   );
 
   getIt.registerLazySingleton(() => GetMyCourseLessons(getIt()));
+  getIt.registerLazySingleton(() => GetMyCourseDetail(getIt()));
   getIt.registerLazySingleton(() => CompleteLesson(getIt()));
   getIt.registerLazySingleton(() => GetCourseProgress(getIt()));
 
@@ -225,6 +234,7 @@ Future<void> _setupMyCourses() async {
       getMyCourseLessonsUseCase: getIt(),
       completeLessonUseCase: getIt(),
       getCourseProgressUseCase: getIt(),
+      getMyCourseDetailUseCase: getIt(),
     ),
   );
 }
@@ -373,7 +383,16 @@ Future<void> _setupAssignments() async {
     ),
   );
 
+  
   getIt.registerLazySingleton(() => SubmitAssignment(getIt()));
+  getIt.registerLazySingleton(() => GetAssignmentSubmissions(getIt()));
+
+  getIt.registerFactory(
+    () => AssignmentProvider(
+      submitAssignmentUseCase: getIt(),
+      getAssignmentSubmissionsUseCase: getIt(),
+    ),
+  );
 }
 
 Future<void> _setupLivestreams() async {

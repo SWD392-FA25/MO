@@ -22,6 +22,8 @@ abstract class MyCourseRemoteDataSource {
     required String courseId,
     required int completedLessons,
   });
+
+  Future<Map<String, dynamic>> getMyCourseDetail(String courseId);
 }
 
 class MyCourseRemoteDataSourceImpl implements MyCourseRemoteDataSource {
@@ -167,6 +169,33 @@ class MyCourseRemoteDataSourceImpl implements MyCourseRemoteDataSource {
         rethrow;
       }
       throw ServerException('Failed to update course progress: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getMyCourseDetail(String courseId) async {
+    try {
+      final response = await client.get('/me/courses/$courseId');
+
+      if (response.data == null) {
+        throw ServerException('No data received from server');
+      }
+
+      final data = response.data;
+      Map<String, dynamic> courseJson;
+
+      if (data is Map<String, dynamic>) {
+        courseJson = data['data'] ?? data;
+      } else {
+        throw ServerException('Unexpected response format');
+      }
+
+      return courseJson;
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Failed to fetch course detail: ${e.toString()}');
     }
   }
 }

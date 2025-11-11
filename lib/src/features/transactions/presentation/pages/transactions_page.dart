@@ -1,335 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
+import '../../../my_courses/presentation/providers/order_provider.dart';
+import '../../../my_courses/domain/entities/order.dart';
 import 'package:igcse_learning_hub/src/theme/design_tokens.dart';
 
-class TransactionsPage extends StatelessWidget {
+class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final transactions = _mockTransactions;
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Transactions'),
-        actions: [
-          TextButton(
-            onPressed: () => context.push('/payments/methods'),
-            child: const Text('Phương thức'),
-          ),
-        ],
-      ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: transactions.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          final transaction = transactions[index];
-          return InkWell(
-            onTap: () => context.push('/transactions/${transaction.id}'),
-            borderRadius: BorderRadius.circular(24),
-            child: Ink(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: const [
-                  BoxShadow(
-                    color: AppColors.cardShadow,
-                    blurRadius: 18,
-                    offset: Offset(0, 12),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
-                      color: AppColors.primary.withAlpha(18),
-                    ),
-                    child: Icon(
-                      transaction.status == 'Paid'
-                          ? Icons.check_circle_rounded
-                          : Icons.pending_actions_rounded,
-                      color: transaction.status == 'Paid'
-                          ? AppColors.primary
-                          : AppColors.accent,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          transaction.title,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '${transaction.date} • ${transaction.method}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '-\$${transaction.amount.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: AppColors.primary,
-                            ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        transaction.status,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: transaction.status == 'Paid'
-                                  ? Colors.green
-                                  : AppColors.accent,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/payments/methods'),
-        label: const Text('Thanh toán khoá học'),
-        icon: const Icon(Icons.credit_card),
-      ),
-    );
-  }
+  State<TransactionsPage> createState() => _TransactionsPageState();
 }
 
-class PaymentMethodsPage extends StatelessWidget {
-  const PaymentMethodsPage({super.key});
+class _TransactionsPageState extends State<TransactionsPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<OrderProvider>().loadOrders();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final methods = _paymentMethods;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chọn phương thức thanh toán'),
-      ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemCount: methods.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          final method = methods[index];
-          return ListTile(
-            tileColor: Colors.white,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            leading: CircleAvatar(
-              backgroundColor: AppColors.primary.withAlpha(26),
-              // TODO: Thay icon phương thức thanh toán bằng SVG phù hợp theo Figma.
-              child: Icon(method.icon, color: AppColors.primary),
-            ),
-            title: Text(method.title),
-            subtitle: Text(method.description),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => context.push('/payments/success'),
-          );
-        },
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(20),
-        child: OutlinedButton(
-          onPressed: () => context.push('/profile/payment-options'),
-          child: const Text('Quản lý thẻ của tôi'),
-        ),
-      ),
-    );
-  }
-}
-
-class PaymentSuccessPage extends StatelessWidget {
-  const PaymentSuccessPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.green.withAlpha(32),
-                ),
-                child: const Icon(
-                  Icons.check_rounded,
-                  color: Colors.green,
-                  size: 64,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Thanh toán thành công!',
-                style: textTheme.titleLarge,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Chúng tôi đã gửi biên lai đến email của bạn. Bạn có thể xem lại trong mục giao dịch.',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => context.push('/transactions/receipt'),
-                child: const Text('Xem e-Receipt'),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => context.go('/dashboard'),
-                child: const Text('Về trang chủ'),
-              ),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Transactions'),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Đơn hàng'),
+              Tab(text: 'Phương thức'),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class EReceiptPage extends StatelessWidget {
-  const EReceiptPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('E-Receipt'),
-        actions: [
-          IconButton(
-            onPressed: () => context.push('/transactions/receipt/edit'),
-            icon: const Icon(Icons.edit_outlined),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'IGCSE Learning Hub',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 12),
-              _ReceiptRow(label: 'Invoice ID', value: '#INV-2025-1532'),
-              _ReceiptRow(label: 'Date', value: '06 Oct 2025'),
-              _ReceiptRow(label: 'Payment Method', value: 'Visa **** 8291'),
-              const Divider(height: 32),
-              _ReceiptRow(label: 'Course', value: 'Graphic Design Advanced'),
-              _ReceiptRow(label: 'Subtotal', value: '\$28.00'),
-              _ReceiptRow(label: 'Tax', value: '\$2.80'),
-              const Divider(height: 32),
-              _ReceiptRow(
-                label: 'Total Paid',
-                value: '\$30.80',
-                emphasize: true,
-              ),
-              const SizedBox(height: 32),
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.file_download_outlined),
-                label: const Text('Tải về PDF'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class EReceiptEditPage extends StatefulWidget {
-  const EReceiptEditPage({super.key});
-
-  @override
-  State<EReceiptEditPage> createState() => _EReceiptEditPageState();
-}
-
-class _EReceiptEditPageState extends State<EReceiptEditPage> {
-  final _companyController = TextEditingController(text: 'Luna Creative Studio');
-  final _taxController = TextEditingController(text: '0101929394');
-  final _emailController = TextEditingController(text: 'billing@luna.studio');
-
-  @override
-  void dispose() {
-    _companyController.dispose();
-    _taxController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chỉnh sửa e-Receipt'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        body: TabBarView(
           children: [
-            TextField(
-              controller: _companyController,
-              decoration: const InputDecoration(labelText: 'Tên công ty'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _taxController,
-              decoration: const InputDecoration(labelText: 'Mã số thuế'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email nhận hoá đơn'),
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đã lưu thông tin e-Receipt')),
+            Consumer<OrderProvider>(
+              builder: (context, orderProvider, _) {
+                return _OrdersList(
+                  orders: orderProvider.orders ?? [],
+                  onTap: (order) => context.push('/orders/${order.id}'),
+                  loading: orderProvider.isLoading ?? false,
+                  errorMessage: orderProvider.errorMessage,
+                  onRetry: () => orderProvider.loadOrders(),
                 );
-                context.pop();
               },
-              child: const Text('Lưu thông tin'),
             ),
+            const _PaymentMethodsList(),
           ],
         ),
       ),
@@ -337,114 +58,288 @@ class _EReceiptEditPageState extends State<EReceiptEditPage> {
   }
 }
 
-class _ReceiptRow extends StatelessWidget {
-  const _ReceiptRow({
-    required this.label,
-    required this.value,
-    this.emphasize = false,
+class _OrdersList extends StatelessWidget {
+  const _OrdersList({
+    required this.orders,
+    required this.onTap,
+    required this.loading,
+    required this.errorMessage,
+    required this.onRetry,
   });
 
-  final String label;
-  final String value;
-  final bool emphasize;
+  final List orders;
+  final Function(dynamic) onTap;
+  final bool loading;
+  final String? errorMessage;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading && orders.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppColors.primary,
+        ),
+      );
+    }
+
+    if (errorMessage != null && orders.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              errorMessage!,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRetry,
+              child: const Text('Thử lại'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (orders.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 64,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Chưa có đơn hàng nào',
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final textTheme = Theme.of(context).textTheme;
+    return ListView.separated(
+      padding: const EdgeInsets.all(20),
+      itemCount: orders.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final order = orders[index];
+        return _OrderCard(order: order, onTap: onTap);
+      },
+    );
+  }
+}
+
+class _OrderCard extends StatelessWidget {
+  const _OrderCard({
+    required this.order,
+    required this.onTap,
+  });
+
+  final Order order;
+  final Function(dynamic) onTap;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: () => onTap(order),
+      child: Ink(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: const [
+            BoxShadow(
+              color: AppColors.cardShadow,
+              offset: Offset(0, 10),
+              blurRadius: 24,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    color: AppColors.primary.withAlpha(20),
+                  ),
+                  child: Icon(
+                    _getOrderStatusIcon(order.status),
+                    color: _getOrderStatusColor(order.status),
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Đơn hàng #${order.id.toString().substring(0, 8)}',
+                            style: textTheme.titleMedium,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: _getOrderStatusColor(order.status).withAlpha(24),
+                            ),
+                            child: Text(
+                              _getOrderStatusText(order.status),
+                              style: textTheme.bodySmall?.copyWith(
+                                color: _getOrderStatusColor(order.status),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${order.items.length} khóa học',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _formatDate(order.createdAt),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  '\$${order.totalAmount.toStringAsFixed(2)}',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getOrderStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Icons.pending;
+      case 'paid':
+      case 'completed':
+        return Icons.check_circle;
+      case 'failed':
+      case 'cancelled':
+        return Icons.error;
+      default:
+        return Icons.receipt_long;
+    }
+  }
+
+  Color _getOrderStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return AppColors.primary;
+      case 'paid':
+      case 'completed':
+        return Colors.green;
+      case 'failed':
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
+  String _getOrderStatusText(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'Đang xử lý';
+      case 'paid':
+      case 'completed':
+        return 'Hoàn thành';
+      case 'failed':
+        return 'Thất bại';
+      case 'cancelled':
+        return 'Đã hủy';
+      default:
+        return status;
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+class _PaymentMethodsList extends StatelessWidget {
+  const _PaymentMethodsList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
+          const Icon(
+            Icons.payment,
+            size: 64,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Phương thức thanh toán sẽ được hiển thị ở đây',
+            style: TextStyle(
+              fontSize: 16,
+              color: AppColors.textSecondary,
             ),
           ),
-          Text(
-            value,
-            style: (emphasize ? textTheme.titleMedium : textTheme.bodyMedium)
-                ?.copyWith(fontWeight: FontWeight.w600),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: () => context.push('/payments/methods'),
+            icon: const Icon(Icons.add),
+            label: const Text('Thêm phương thức'),
           ),
         ],
       ),
     );
   }
 }
-
-class _Transaction {
-  const _Transaction({
-    required this.id,
-    required this.title,
-    required this.date,
-    required this.method,
-    required this.amount,
-    required this.status,
-  });
-
-  final String id;
-  final String title;
-  final String date;
-  final String method;
-  final double amount;
-  final String status;
-}
-
-class _PaymentMethod {
-  const _PaymentMethod({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
-
-  final IconData icon;
-  final String title;
-  final String description;
-}
-
-const _mockTransactions = [
-  _Transaction(
-    id: 'trx-1',
-    title: 'Graphic Design Advanced',
-    date: '05 Oct 2025',
-    method: 'Visa **** 8291',
-    amount: 30.80,
-    status: 'Paid',
-  ),
-  _Transaction(
-    id: 'trx-2',
-    title: 'Web Developer Concepts',
-    date: '28 Sep 2025',
-    method: 'Mastercard **** 1128',
-    amount: 45.50,
-    status: 'Paid',
-  ),
-  _Transaction(
-    id: 'trx-3',
-    title: 'Digital Marketing Crash Course',
-    date: '15 Sep 2025',
-    method: 'Momo Wallet',
-    amount: 25.00,
-    status: 'Pending',
-  ),
-];
-
-const _paymentMethods = [
-  _PaymentMethod(
-    icon: Icons.credit_card,
-    title: 'Visa / Mastercard',
-    description: 'Thanh toán bằng thẻ quốc tế',
-  ),
-  _PaymentMethod(
-    icon: Icons.account_balance_wallet_outlined,
-    title: 'Ví điện tử',
-    description: 'ShopeePay, Momo, ZaloPay...',
-  ),
-  _PaymentMethod(
-    icon: Icons.payments_outlined,
-    title: 'Chuyển khoản ngân hàng',
-    description: 'Thanh toán qua Internet Banking',
-  ),
-];

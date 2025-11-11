@@ -5,21 +5,25 @@ import '../../domain/entities/course_progress.dart';
 import '../../domain/usecases/complete_lesson.dart';
 import '../../domain/usecases/get_course_progress.dart';
 import '../../domain/usecases/get_my_course_lessons.dart';
+import '../../domain/usecases/get_my_course_detail.dart';
 
 class MyCourseProvider extends ChangeNotifier {
   final GetMyCourseLessons getMyCourseLessonsUseCase;
   final CompleteLesson completeLessonUseCase;
   final GetCourseProgress getCourseProgressUseCase;
+  final GetMyCourseDetail getMyCourseDetailUseCase;
 
   MyCourseProvider({
     required this.getMyCourseLessonsUseCase,
     required this.completeLessonUseCase,
     required this.getCourseProgressUseCase,
+    required this.getMyCourseDetailUseCase,
   });
 
   // State
   Map<String, List<Lesson>> _courseLessons = {};
   Map<String, CourseProgress> _courseProgress = {};
+  Map<String, Map<String, dynamic>> _courseDetails = {};
   bool _isLoading = false;
   String? _errorMessage;
   String? _currentCourseId;
@@ -111,6 +115,35 @@ class MyCourseProvider extends ChangeNotifier {
   void clearCourseData(String courseId) {
     _courseLessons.remove(courseId);
     _courseProgress.remove(courseId);
+    _courseDetails.remove(courseId);
     notifyListeners();
+  }
+
+  // Load course detail
+  Future<void> loadCourseDetail(String courseId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _currentCourseId = courseId;
+    notifyListeners();
+
+    final result = await getMyCourseDetailUseCase.call(courseId);
+
+    result.fold(
+      (failure) {
+        _errorMessage = failure.message;
+        _isLoading = false;
+        notifyListeners();
+      },
+      (courseDetail) {
+        _courseDetails[courseId] = courseDetail;
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  // Get course detail
+  Map<String, dynamic>? getCourseDetail(String courseId) {
+    return _courseDetails[courseId];
   }
 }
