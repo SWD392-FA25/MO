@@ -32,6 +32,12 @@ import '../../src/features/my_courses/domain/usecases/get_my_course_detail.dart'
 import '../../src/features/my_courses/presentation/providers/my_course_provider.dart';
 import '../../src/features/my_courses/presentation/providers/assignment_provider.dart';
 import '../../src/features/my_courses/domain/usecases/get_assignment_submissions.dart';
+import '../../src/features/ai_chat/data/datasources/ai_chat_remote_datasource.dart';
+import '../../src/features/ai_chat/data/repositories/ai_chat_repository_impl.dart';
+import '../../src/features/ai_chat/domain/repositories/ai_chat_repository.dart';
+import '../../src/features/ai_chat/domain/usecases/clear_conversation.dart';
+import '../../src/features/ai_chat/domain/usecases/send_message.dart';
+import '../../src/features/ai_chat/presentation/providers/ai_chat_provider.dart';
 import '../../src/features/profile/presentation/providers/profile_provider.dart';
 import '../../src/features/quiz/presentation/providers/quiz_provider.dart';
 import '../../src/features/transactions/presentation/providers/order_provider.dart';
@@ -107,6 +113,7 @@ Future<void> setupDependencies() async {
   await _setupAssignments();
   await _setupLivestreams();
   await _setupPaymentMethods();
+  await _setupAiChat();
 }
 
 Future<void> _setupCore() async {
@@ -430,4 +437,27 @@ Future<void> _setupPaymentMethods() async {
 
   getIt.registerLazySingleton(() => GetPaymentMethods(getIt()));
   getIt.registerLazySingleton(() => GetActivePaymentMethods(getIt()));
+}
+
+Future<void> _setupAiChat() async {
+  getIt.registerLazySingleton<AiChatRemoteDataSource>(
+    () => AiChatRemoteDataSourceImpl(),
+  );
+
+  getIt.registerLazySingleton<AiChatRepository>(
+    () => AiChatRepositoryImpl(
+      remoteDataSource: getIt(),
+      networkInfo: getIt(),
+    ),
+  );
+
+  getIt.registerLazySingleton(() => SendMessage(getIt()));
+  getIt.registerLazySingleton(() => ClearConversation(getIt()));
+
+  getIt.registerFactory(
+    () => AiChatProvider(
+      sendMessageUseCase: getIt(),
+      clearConversationUseCase: getIt(),
+    ),
+  );
 }

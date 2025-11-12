@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:igcse_learning_hub/src/features/home/presentation/pages/home_page.dart';
 import 'package:igcse_learning_hub/src/features/lunaby/presentation/pages/lunaby_page.dart';
@@ -25,11 +26,22 @@ class _DashboardPageState extends State<DashboardPage> {
     ProfilePage(),
   ];
 
+  void _navigateToAiTutor() {
+    context.push('/ai-tutor');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: IndexedStack(index: _index, children: _pages),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAiTutor,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.smart_toy),
+        tooltip: 'IGCSE AI Tutor',
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         backgroundColor: Colors.white,

@@ -7,6 +7,7 @@ import 'core/di/injection.dart';
 import 'core/error/failures.dart';
 import 'core/usecases/usecase.dart';
 import 'src/app_router.dart';
+import 'src/features/ai_chat/presentation/providers/ai_chat_provider.dart';
 import 'src/features/authentication/presentation/providers/auth_provider.dart';
 import 'src/features/catalog/domain/usecases/get_courses.dart';
 import 'src/features/catalog/presentation/providers/course_provider.dart';
@@ -287,6 +288,9 @@ class IGCSELearningHub extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => getIt<EnrollmentProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<MyCourseProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<AssignmentProvider>()),
+        
+        // Features
+        ChangeNotifierProvider(create: (_) => getIt<AiChatProvider>()),
         
         // Transactions
         ChangeNotifierProvider(create: (_) => getIt<PaymentProvider>()),
