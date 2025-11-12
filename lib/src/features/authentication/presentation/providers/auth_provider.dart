@@ -4,6 +4,7 @@ import '../../../../../core/usecases/usecase.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/usecases/forgot_password.dart';
 import '../../domain/usecases/get_current_user.dart';
+import '../../domain/usecases/google_sign_in.dart';
 import '../../domain/usecases/sign_in.dart';
 import '../../domain/usecases/sign_out.dart';
 import '../../domain/usecases/sign_up.dart';
@@ -13,6 +14,7 @@ import 'auth_state.dart';
 class AuthProvider extends ChangeNotifier {
   final SignIn signInUseCase;
   final SignUp signUpUseCase;
+  final GoogleSignIn googleSignInUseCase;
   final SignOut signOutUseCase;
   final GetCurrentUser getCurrentUserUseCase;
   final ForgotPassword forgotPasswordUseCase;
@@ -21,6 +23,7 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider({
     required this.signInUseCase,
     required this.signUpUseCase,
+    required this.googleSignInUseCase,
     required this.signOutUseCase,
     required this.getCurrentUserUseCase,
     required this.forgotPasswordUseCase,
@@ -76,6 +79,44 @@ class AuthProvider extends ChangeNotifier {
         password: password,
         name: name,
         phoneNumber: phoneNumber,
+      ),
+    );
+
+    result.fold(
+      (failure) => _setState(AuthError(failure.message)),
+      (user) {
+        _currentUser = user;
+        _setState(AuthAuthenticated(user));
+      },
+    );
+  }
+
+  Future<void> googleSignIn() async {
+    _setState(const AuthLoading());
+
+    final result = await googleSignInUseCase(
+      const GoogleSignInParams(
+        firebaseIdToken: '', // Will be populated by Firebase Auth
+      ),
+    );
+
+    result.fold(
+      (failure) => _setState(AuthError(failure.message)),
+      (user) {
+        _currentUser = user;
+        _setState(AuthAuthenticated(user));
+      },
+    );
+  }
+
+  Future<void> googleSignInWithFirebase({
+    required String firebaseIdToken,
+  }) async {
+    _setState(const AuthLoading());
+
+    final result = await googleSignInUseCase(
+      GoogleSignInParams(
+        firebaseIdToken: firebaseIdToken,
       ),
     );
 

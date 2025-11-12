@@ -3,6 +3,12 @@ import '../../../../../core/network/api_client.dart';
 import '../models/quiz_model.dart';
 
 abstract class QuizRemoteDataSource {
+  Future<List<QuizModel>> getQuizzes();
+  
+  Future<QuizModel> getQuizById(String quizId);
+  
+  Future<List<QuizModel>> getStudentAssignments();
+  
   Future<QuizModel> getQuizForTake(String quizId);
 
   Future<QuizAttemptModel> createAttempt(String quizId);
@@ -25,6 +31,95 @@ class QuizRemoteDataSourceImpl implements QuizRemoteDataSource {
   final ApiClient client;
 
   QuizRemoteDataSourceImpl(this.client);
+
+  @override
+  Future<List<QuizModel>> getQuizzes() async {
+    try {
+      final response = await client.get('/Quizzes');
+
+      if (response.data == null) {
+        throw ServerException('No data received from server');
+      }
+
+      final data = response.data;
+      List<dynamic> quizzesJson;
+
+      if (data is Map<String, dynamic>) {
+        quizzesJson = data['data'] ?? data['items'] ?? data['quizzes'] ?? [];
+      } else if (data is List) {
+        quizzesJson = data;
+      } else {
+        throw ServerException('Unexpected response format');
+      }
+
+      return quizzesJson
+          .map((json) => QuizModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Failed to fetch quizzes: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<QuizModel> getQuizById(String quizId) async {
+    try {
+      final response = await client.get('/Quizzes/$quizId');
+
+      if (response.data == null) {
+        throw ServerException('No data received from server');
+      }
+
+      final data = response.data;
+      Map<String, dynamic> quizJson;
+
+      if (data is Map<String, dynamic>) {
+        quizJson = data['data'] ?? data;
+      } else {
+        throw ServerException('Unexpected response format');
+      }
+
+      return QuizModel.fromJson(quizJson);
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Failed to fetch quiz: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<QuizModel>> getStudentAssignments() async {
+    try {
+      final response = await client.get('/student/assignments');
+
+      if (response.data == null) {
+        throw ServerException('No data received from server');
+      }
+
+      final data = response.data;
+      List<dynamic> quizzesJson;
+
+      if (data is Map<String, dynamic>) {
+        quizzesJson = data['data'] ?? data['items'] ?? data['quizzes'] ?? [];
+      } else if (data is List) {
+        quizzesJson = data;
+      } else {
+        throw ServerException('Unexpected response format');
+      }
+
+      return quizzesJson
+          .map((json) => QuizModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Failed to fetch quiz assignments: ${e.toString()}');
+    }
+  }
 
   @override
   Future<QuizModel> getQuizForTake(String quizId) async {

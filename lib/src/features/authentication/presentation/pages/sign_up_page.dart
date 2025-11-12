@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 
 import 'package:igcse_learning_hub/src/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:igcse_learning_hub/src/features/authentication/presentation/providers/auth_state.dart';
@@ -22,6 +24,14 @@ class _SignUpPageState extends State<SignUpPage> {
   final _passwordController = TextEditingController();
   bool _agreed = false;
   bool _obscurePassword = true;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: [
+      'email',
+      'profile',
+      'openid',
+    ],
+    hostedDomain: '',
+  );
 
   @override
   void dispose() {
@@ -72,6 +82,78 @@ class _SignUpPageState extends State<SignUpPage> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    try {
+      print('🔍 DEBUG: Starting Google Sign-In (Sign Up)');
+      final authProvider = context.read<AuthProvider>();
+      
+      // Check if already signed in
+      GoogleSignInAccount? currentUser = await _googleSignIn.signInSilently();
+      if (currentUser != null) {
+        print('🔍 DEBUG: Already signed in, signing out...');
+        await _googleSignIn.signOut();
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+      
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      print('🔍 DEBUG: Google Sign-In result: ${googleUser != null}');
+      
+      if (googleUser == null) {
+        print('🔍 DEBUG: User cancelled Google Sign-In');
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // STEP 2: Create Google credential for Firebase
+      final OAuthCredential googleCredential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+
+      // STEP 3: Sign in to Firebase with Google credential
+      final UserCredential firebaseUserCredential = await FirebaseAuth.instance.signInWithCredential(googleCredential);
+      print('🔍 DEBUG: Firebase authentication successful');
+      print('🔍 DEBUG: Firebase User UID: ${firebaseUserCredential.user?.uid}');
+
+      // STEP 4: Get Firebase ID Token
+      final String? firebaseIdToken = await firebaseUserCredential.user?.getIdToken();
+      if (firebaseIdToken == null) {
+        throw Exception('Failed to get Firebase ID token');
+      }
+      print('🔍 DEBUG: Firebase ID Token: ${firebaseIdToken.substring(0, 50)}...');
+
+      // STEP 5: Send Firebase ID token to API
+      await authProvider.googleSignInWithFirebase(
+        firebaseIdToken: firebaseIdToken,
+      );
+
+      if (!mounted) return;
+
+      final state = authProvider.state;
+      if (state is AuthAuthenticated) {
+        context.go('/dashboard');
+      } else if (state is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(state.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print('🔴 DEBUG: Google Sign-Up error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -225,15 +307,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Google Sign In coming soon'),
-                            ),
-                          );
-                        },
+                  onPressed: isLoading ? null : _handleGoogleSignIn,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFEA4235),
                     foregroundColor: Colors.white,

@@ -8,6 +8,9 @@ class Quiz extends Equatable {
   final int durationMinutes;
   final int passingScore;
   final bool isActive;
+  final List<QuizQuestion>? questions;
+  final String? timeLimit;
+  final int? maxScore;
 
   const Quiz({
     required this.id,
@@ -17,6 +20,9 @@ class Quiz extends Equatable {
     required this.durationMinutes,
     required this.passingScore,
     this.isActive = true,
+    this.questions,
+    this.timeLimit,
+    this.maxScore,
   });
 
   @override
@@ -28,6 +34,9 @@ class Quiz extends Equatable {
         durationMinutes,
         passingScore,
         isActive,
+        questions,
+        timeLimit,
+        maxScore,
       ];
 }
 
@@ -68,18 +77,33 @@ class QuizAttempt extends Equatable {
 class QuizQuestion extends Equatable {
   final String id;
   final String question;
-  final List<String> options;
+  final String text; // Renamed from question to text
+  final List<QuizQuestionOption> options;
   final String? correctAnswer;
   final int points;
 
   const QuizQuestion({
     required this.id,
     required this.question,
+    required this.text,
     required this.options,
     this.correctAnswer,
     required this.points,
   });
 
   @override
-  List<Object?> get props => [id, question, options, correctAnswer, points];
+  List<Object?> get props => [id, question, text, options, correctAnswer, points];
+}
+
+class QuizQuestionOption extends Equatable {
+  final String? id;
+  final String? text;
+
+  const QuizQuestionOption({
+    this.id,
+    this.text,
+  });
+
+  @override
+  List<Object?> get props => [id, text];
 }

@@ -4,7 +4,7 @@ import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/network/network_info.dart';
 import '../../domain/entities/course.dart';
-import '../../domain/entities/lesson.dart';
+import '../../domain/entities/course_lesson.dart';
 import '../../domain/repositories/course_repository.dart';
 import '../datasources/course_remote_datasource.dart';
 
@@ -65,13 +65,15 @@ class CourseRepositoryImpl implements CourseRepository {
   }
 
   @override
-  Future<Either<Failure, List<Lesson>>> getCourseLessons(String courseId) async {
+  Future<Either<Failure, List<CourseLesson>>> getCourseLessons(String courseId) async {
     if (!await networkInfo.isConnected) {
       return const Left(NetworkFailure());
     }
 
     try {
+      print('🔍 [REPOSITORY] Fetching course lessons for: $courseId');
       final lessonModels = await remoteDataSource.getCourseLessons(courseId);
+      print('🔍 [REPOSITORY] Successfully fetched ${lessonModels.length} lessons');
       return Right(lessonModels.map((model) => model.toEntity()).toList());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));
@@ -83,19 +85,18 @@ class CourseRepositoryImpl implements CourseRepository {
   }
 
   @override
-  Future<Either<Failure, Lesson>> getCourseLesson({
-    required String courseId,
-    required String lessonId,
-  }) async {
+  Future<Either<Failure, CourseLesson>> getLessonDetail(
+    String courseId,
+    String lessonId,
+  ) async {
     if (!await networkInfo.isConnected) {
       return const Left(NetworkFailure());
     }
 
     try {
-      final lessonModel = await remoteDataSource.getCourseLesson(
-        courseId: courseId,
-        lessonId: lessonId,
-      );
+      print('🔍 [REPOSITORY] Fetching lesson detail for course=$courseId, lesson=$lessonId');
+      final lessonModel = await remoteDataSource.getLessonDetail(courseId, lessonId);
+      print('🔍 [REPOSITORY] Lesson detail fetched successfully');
       return Right(lessonModel.toEntity());
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));

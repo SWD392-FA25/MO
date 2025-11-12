@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/di/injection.dart';
+import 'features/ai_chat/presentation/pages/ai_chat_page.dart';
 import 'features/authentication/presentation/providers/auth_provider.dart';
 import 'features/authentication/presentation/pages/auth_completion_page.dart';
 import 'features/authentication/presentation/pages/auth_welcome_page.dart';
@@ -18,10 +19,16 @@ import 'features/catalog/presentation/pages/search_page.dart';
 import 'features/course_detail/presentation/pages/tabs/course_curriculum_page.dart';
 import 'features/course_detail/presentation/pages/tabs/course_reviews_page.dart';
 import 'features/course_detail/presentation/pages/course_detail_page.dart';
+import 'features/course_detail/presentation/pages/lesson_detail_page.dart' as course_detail;
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/lunaby/presentation/pages/lunaby_page.dart';
 import 'features/my_courses/presentation/pages/my_course_lessons_page.dart';
+import 'features/my_courses/presentation/pages/my_course_lessons_view_page.dart';
 import 'features/my_courses/presentation/pages/my_courses_page.dart';
+import 'features/my_courses/presentation/pages/lesson_detail_page.dart';
+import 'features/my_courses/presentation/pages/assignment_page.dart';
+import 'features/my_courses/presentation/pages/orders_page.dart';
+import 'features/my_courses/presentation/pages/order_detail_page.dart';
 import 'features/onboarding/presentation/pages/onboarding_page.dart';
 import 'features/profile/presentation/pages/profile_page.dart';
 import 'features/quiz/presentation/pages/quiz_page.dart';
@@ -125,6 +132,11 @@ GoRouter buildRouter() {
         path: '/dashboard',
         builder: (context, state) => const DashboardPage(),
       ),
+      GoRoute(
+        path: '/ai-tutor',
+        name: 'ai_tutor',
+        builder: (context, state) => const AiChatPage(),
+      ),
       GoRoute(path: '/', redirect: (context, state) => '/dashboard'),
       GoRoute(
         path: '/categories',
@@ -163,6 +175,22 @@ GoRouter buildRouter() {
             CourseCurriculumPage(courseId: state.pathParameters['id']!),
       ),
       GoRoute(
+        path: '/courses/:courseId/lessons/:lessonId',
+        name: 'lesson_detail',
+        builder: (context, state) {
+          final courseId = state.pathParameters['courseId']!;
+          final lessonId = state.pathParameters['lessonId']!;
+          return course_detail.LessonDetailPage(courseId: courseId, lessonId: lessonId);
+        },
+      ),
+      GoRoute(
+        path: '/courses/:courseId/lessons/:lessonId/assignments/:assignmentId',
+        name: 'assignment_detail',
+        builder: (context, state) => AssignmentPage(
+          courseId: state.pathParameters['courseId']!,
+        ),
+      ),
+      GoRoute(
         path: '/courses/reviews',
         builder: (context, state) => const CourseReviewsPage(),
       ),
@@ -195,15 +223,9 @@ GoRouter buildRouter() {
             CourseCompletionPage(courseId: state.pathParameters['id']!),
       ),
       GoRoute(
-        path: '/quiz',
-        builder: (context, state) => const QuizPage(),
-      ),
-      GoRoute(
-        path: '/quiz/detail',
-        builder: (context, state) {
-          final id = state.uri.queryParameters['quiz'] ?? 'quiz-1';
-          return QuizDetailPage(quizId: id);
-        },
+        path: '/my-courses/:id/assignments',
+        builder: (context, state) =>
+            AssignmentPage(courseId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/lunaby',
@@ -213,26 +235,7 @@ GoRouter buildRouter() {
         path: '/transactions',
         builder: (context, state) => const TransactionsPage(),
       ),
-      GoRoute(
-        path: '/transactions/receipt',
-        builder: (context, state) => const EReceiptPage(),
-      ),
-      GoRoute(
-        path: '/transactions/:id',
-        builder: (context, state) => const EReceiptPage(),
-      ),
-      GoRoute(
-        path: '/transactions/receipt/edit',
-        builder: (context, state) => const EReceiptEditPage(),
-      ),
-      GoRoute(
-        path: '/payments/methods',
-        builder: (context, state) => const PaymentMethodsPage(),
-      ),
-      GoRoute(
-        path: '/payments/success',
-        builder: (context, state) => const PaymentSuccessPage(),
-      ),
+      
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfilePage(),
@@ -256,6 +259,39 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/profile/bookmarks',
         builder: (context, state) => const BookmarksPage(),
+      ),
+      GoRoute(
+        path: '/my-courses/ongoing/:courseId',
+        builder: (context, state) => MyCourseLessonsViewPage(courseId: state.pathParameters['courseId']!),
+      ),
+      GoRoute(
+        path: '/lesson/:courseId/:lessonId',
+        builder: (context, state) {
+          final courseId = state.pathParameters['courseId']!;
+          final lessonId = state.pathParameters['lessonId']!;
+          return LessonDetailPage(courseId: courseId, lessonId: lessonId);
+        },
+      ),
+      GoRoute(
+        path: '/assignment/:courseId/:lessonId',
+        builder: (context, state) {
+          final courseId = state.pathParameters['courseId']!;
+          final lessonId = state.pathParameters['lessonId']!;
+          // We'll need assignmentId, will use lessonId as fallback for now
+          return AssignmentPage(courseId: courseId, lessonId: lessonId, assignmentId: lessonId);
+        },
+      ),
+      GoRoute(
+        path: '/orders',
+        builder: (context, state) => const OrdersPage(),
+      ),
+      GoRoute(
+        path: '/orders/:orderId',
+        builder: (context, state) => OrderDetailPage(orderId: state.pathParameters['orderId']!),
+      ),
+      GoRoute(
+        path: '/quiz/:quizId',
+        builder: (context, state) => QuizPage(quizId: state.pathParameters['quizId']!),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

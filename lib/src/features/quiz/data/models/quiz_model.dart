@@ -9,9 +9,19 @@ class QuizModel extends Quiz {
     required super.durationMinutes,
     required super.passingScore,
     super.isActive,
+    super.questions,
+    super.timeLimit,
+    super.maxScore,
   });
 
   factory QuizModel.fromJson(Map<String, dynamic> json) {
+    List<QuizQuestionModel>? questions;
+    if (json['questions'] != null) {
+      questions = (json['questions'] as List)
+          .map((q) => QuizQuestionModel.fromJson(q as Map<String, dynamic>))
+          .toList();
+    }
+
     return QuizModel(
       id: json['id']?.toString() ?? '',
       title: json['title'] ?? json['name'] ?? '',
@@ -20,6 +30,9 @@ class QuizModel extends Quiz {
       durationMinutes: json['durationMinutes'] ?? json['duration'] ?? 0,
       passingScore: json['passingScore'] ?? json['passScore'] ?? 0,
       isActive: json['isActive'] ?? json['active'] ?? true,
+      questions: questions?.map((q) => q.toEntity()).toList(),
+      timeLimit: json['timeLimit']?.toString(),
+      maxScore: json['maxScore'],
     );
   }
 
@@ -32,6 +45,9 @@ class QuizModel extends Quiz {
       'durationMinutes': durationMinutes,
       'passingScore': passingScore,
       'isActive': isActive,
+      'questions': questions?.map((q) => QuizQuestionModel.fromEntity(q).toJson()).toList(),
+      'timeLimit': timeLimit,
+      'maxScore': maxScore,
     };
   }
 
@@ -43,7 +59,25 @@ class QuizModel extends Quiz {
         durationMinutes: durationMinutes,
         passingScore: passingScore,
         isActive: isActive,
+        questions: questions,
+        timeLimit: timeLimit,
+        maxScore: maxScore,
       );
+
+  static QuizModel fromEntity(Quiz entity) {
+    return QuizModel(
+      id: entity.id,
+      title: entity.title,
+      description: entity.description,
+      questionCount: entity.questionCount,
+      durationMinutes: entity.durationMinutes,
+      passingScore: entity.passingScore,
+      isActive: entity.isActive,
+      questions: entity.questions?.map((q) => QuizQuestionModel.fromEntity(q)).toList(),
+      timeLimit: entity.timeLimit,
+      maxScore: entity.maxScore,
+    );
+  }
 }
 
 class QuizAttemptModel extends QuizAttempt {
@@ -106,21 +140,40 @@ class QuizQuestionModel extends QuizQuestion {
   const QuizQuestionModel({
     required super.id,
     required super.question,
+    required super.text,
     required super.options,
     super.correctAnswer,
     required super.points,
   });
 
   factory QuizQuestionModel.fromJson(Map<String, dynamic> json) {
-    List<String> options = [];
+    List<QuizQuestionOptionModel> options = [];
     if (json['options'] != null) {
-      options = (json['options'] as List).map((e) => e.toString()).toList();
+      if (json['options'] is List) {
+        final optionsList = json['options'] as List;
+        if (optionsList.isNotEmpty && optionsList.first is String) {
+          // Handle simple string array
+          options = optionsList.asMap().entries.map((entry) {
+            return QuizQuestionOptionModel(
+              id: entry.key.toString(),
+              text: entry.value.toString(),
+            );
+          }).toList();
+        } else {
+          // Handle object array
+          options = optionsList
+              .map((e) => QuizQuestionOptionModel.fromJson(e as Map<String, dynamic>))
+              .cast<QuizQuestionOptionModel>()
+              .toList();
+        }
+      }
     }
 
     return QuizQuestionModel(
       id: json['id']?.toString() ?? '',
       question: json['question'] ?? json['text'] ?? '',
-      options: options,
+      text: json['text'] ?? json['question'] ?? '',
+      options: options.map((o) => o.toEntity()).toList(),
       correctAnswer: json['correctAnswer'],
       points: json['points'] ?? json['score'] ?? 1,
     );
@@ -130,7 +183,8 @@ class QuizQuestionModel extends QuizQuestion {
     return {
       'id': id,
       'question': question,
-      'options': options,
+      'text': text,
+      'options': options.map((o) => QuizQuestionOptionModel.fromEntity(o).toJson()).toList(),
       'correctAnswer': correctAnswer,
       'points': points,
     };
@@ -139,8 +193,55 @@ class QuizQuestionModel extends QuizQuestion {
   QuizQuestion toEntity() => QuizQuestion(
         id: id,
         question: question,
-        options: options,
+        text: text,
+        options: options.map((o) => QuizQuestionOption(id: o.id, text: o.text)).toList(),
         correctAnswer: correctAnswer,
         points: points,
       );
+
+  static QuizQuestionModel fromEntity(QuizQuestion entity) {
+    return QuizQuestionModel(
+      id: entity.id,
+      question: entity.question,
+      text: entity.text,
+      options: entity.options
+          .map((o) => QuizQuestionOptionModel.fromEntity(o))
+          .toList(),
+      correctAnswer: entity.correctAnswer,
+      points: entity.points,
+    );
+  }
+}
+
+class QuizQuestionOptionModel extends QuizQuestionOption {
+  const QuizQuestionOptionModel({
+    super.id,
+    super.text,
+  });
+
+  factory QuizQuestionOptionModel.fromJson(Map<String, dynamic> json) {
+    return QuizQuestionOptionModel(
+      id: json['id']?.toString(),
+      text: json['text']?.toString() ?? json['option']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'text': text,
+    };
+  }
+
+  QuizQuestionOption toEntity() => QuizQuestionOption(
+        id: id,
+        text: text,
+      );
+
+  static QuizQuestionOptionModel fromEntity(QuizQuestionOption entity) {
+    return QuizQuestionOptionModel(
+      id: entity.id,
+      text: entity.text,
+    );
+  }
 }

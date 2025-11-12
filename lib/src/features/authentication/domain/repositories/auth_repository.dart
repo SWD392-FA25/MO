@@ -17,7 +17,13 @@ abstract class AuthRepository {
     String? phoneNumber,
   });
 
+  Future<Either<Failure, User>> googleSignIn({
+    required String firebaseIdToken,
+  });
+
   Future<Either<Failure, void>> signOut();
+
+  Future<Either<Failure, void>> revokeToken(String refreshToken);
 
   Future<Either<Failure, User>> getCurrentUser();
 

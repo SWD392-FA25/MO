@@ -32,6 +32,34 @@ class ApiClient {
       ));
     }
 
+    // Add custom interceptor for detailed request logging
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          if (options.path.contains('google-login')) {
+            print('\n🔍 *** GOOGLE SIGN-IN REQUEST ***');
+            print('Method: ${options.method}');
+            print('URL: ${options.uri}');
+            print('Headers: ${options.headers}');
+            print('Data: ${options.data}');
+            print('Content-Type: ${options.headers['Content-Type']}');
+            print('---------------------------------\n');
+          }
+          return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          if (response.requestOptions.path.contains('google-login')) {
+            print('\n🔍 *** GOOGLE SIGN-IN RESPONSE ***');
+            print('Status: ${response.statusCode}');
+            print('Headers: ${response.headers}');
+            print('Body: ${response.data}');
+            print('----------------------------------\n');
+          }
+          return handler.next(response);
+        },
+      ),
+    );
+
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
@@ -41,6 +69,13 @@ class ApiClient {
           return handler.next(response);
         },
         onError: (error, handler) {
+          if (error.requestOptions.path.contains('google-login')) {
+            print('\n🔍 *** GOOGLE SIGN-IN ERROR ***');
+            print('Error: ${error.toString()}');
+            print('Response: ${error.response?.data}');
+            print('Status: ${error.response?.statusCode}');
+            print('----------------------------------\n');
+          }
           final exception = _handleDioError(error);
           return handler.reject(
             DioException(

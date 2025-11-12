@@ -44,3 +44,22 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 *.md
+
+# SECURITY: Never commit sensitive files
+# Firebase/Google Services files
+google-services.json
+GoogleService-Info.plist
+*google-services*.json
+firebase.json
+*.p8
+*.p12
+*.key
+*.jks
+*.keystore
+
+# Environment files with secrets
+.env*
+*.env
+config/
+secrets/
+**/secrets/**

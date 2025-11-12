@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'config/env.dart';
 import 'core/di/injection.dart';
 import 'core/error/failures.dart';
 import 'core/usecases/usecase.dart';
 import 'src/app_router.dart';
+import 'src/features/ai_chat/presentation/providers/ai_chat_provider.dart';
 import 'src/features/authentication/presentation/providers/auth_provider.dart';
 import 'src/features/catalog/domain/usecases/get_courses.dart';
 import 'src/features/catalog/presentation/providers/course_provider.dart';
@@ -20,9 +22,12 @@ import 'src/features/transactions/presentation/providers/payment_provider.dart';
 import 'src/features/catalog/domain/usecases/get_livestreams.dart';
 import 'src/features/catalog/domain/usecases/get_packages.dart';
 import 'src/features/my_courses/domain/usecases/get_my_enrollments.dart';
+import 'src/features/my_courses/presentation/providers/assignment_provider.dart';
+import 'src/features/transactions/domain/usecases/get_my_orders.dart';
+
 import 'src/features/quiz/domain/usecases/get_my_quiz_attempts.dart';
 import 'src/features/transactions/domain/usecases/get_active_payment_methods.dart';
-import 'src/features/transactions/domain/usecases/get_my_orders.dart';
+
 import 'src/state/app_state.dart';
 import 'src/theme/app_theme.dart';
 
@@ -31,10 +36,13 @@ void main() async {
 
   Env.setEnvironment(Environment.dev);
 
+  // Initialize Firebase
+  await Firebase.initializeApp();
+
   await setupDependencies();
 
   // 🧪 TEST APIs - Comment out sau khi test xong
-  // await _testAPIs();  // ✅ APIs tested and working!
+  await _testAPIs();  // ✅ APIs tested and working!
 
   runApp(const IGCSELearningHub());
 }
@@ -279,10 +287,14 @@ class IGCSELearningHub extends StatelessWidget {
         // My Courses
         ChangeNotifierProvider(create: (_) => getIt<EnrollmentProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<MyCourseProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<AssignmentProvider>()),
+        
+        // Features
+        ChangeNotifierProvider(create: (_) => getIt<AiChatProvider>()),
         
         // Transactions
-        ChangeNotifierProvider(create: (_) => getIt<OrderProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<PaymentProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<OrderProvider>()),
         
         // Quiz
         ChangeNotifierProvider(create: (_) => getIt<QuizProvider>()),

@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../entities/course.dart';
+import '../entities/course_lesson.dart';
 import '../entities/lesson.dart';
 
 abstract class CourseRepository {
@@ -14,10 +15,10 @@ abstract class CourseRepository {
 
   Future<Either<Failure, Course>> getCourseById(String id);
 
-  Future<Either<Failure, List<Lesson>>> getCourseLessons(String courseId);
+  Future<Either<Failure, List<CourseLesson>>> getCourseLessons(String courseId);
 
-  Future<Either<Failure, Lesson>> getCourseLesson({
-    required String courseId,
-    required String lessonId,
-  });
+  Future<Either<Failure, CourseLesson>> getLessonDetail(
+    String courseId,
+    String lessonId,
+  );
 }

@@ -47,7 +47,7 @@ void main() {
       // Assert
       result.fold(
         (failure) => print('❌ Login failed: ${failure.message}'),
-        (token) => print('✅ Login success! Token: ${token.accessToken}'),
+        (token) => print('✅ Login success! Token: ${token.toString()}'),
       );
     });
   });

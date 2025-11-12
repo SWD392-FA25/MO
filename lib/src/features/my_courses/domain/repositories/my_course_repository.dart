@@ -23,4 +23,6 @@ abstract class MyCourseRepository {
     required String courseId,
     required int completedLessons,
   });
+
+  Future<Either<Failure, Map<String, dynamic>>> getMyCourseDetail(String courseId);
 }

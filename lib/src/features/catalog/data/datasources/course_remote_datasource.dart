@@ -1,7 +1,7 @@
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/network/api_client.dart';
+import '../models/course_lesson_model.dart';
 import '../models/course_model.dart';
-import '../models/lesson_model.dart';
 
 abstract class CourseRemoteDataSource {
   Future<List<CourseModel>> getCourses({
@@ -13,12 +13,12 @@ abstract class CourseRemoteDataSource {
 
   Future<CourseModel> getCourseById(String id);
 
-  Future<List<LessonModel>> getCourseLessons(String courseId);
+  Future<List<CourseLessonModel>> getCourseLessons(String courseId);
 
-  Future<LessonModel> getCourseLesson({
-    required String courseId,
-    required String lessonId,
-  });
+  Future<CourseLessonModel> getLessonDetail(
+    String courseId,
+    String lessonId,
+  );
 }
 
 class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
@@ -99,8 +99,9 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
   }
 
   @override
-  Future<List<LessonModel>> getCourseLessons(String courseId) async {
+  Future<List<CourseLessonModel>> getCourseLessons(String courseId) async {
     try {
+      print('🔍 [DATASOURCE] Fetching lessons for course: $courseId');
       final response = await client.get('/courses/$courseId/lessons');
 
       if (response.data == null) {
@@ -118,10 +119,12 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         throw ServerException('Unexpected response format');
       }
 
+      print('🔍 [DATASOURCE] Found ${lessonsJson.length} lessons');
       return lessonsJson
-          .map((json) => LessonModel.fromJson(json as Map<String, dynamic>))
+          .map((json) => CourseLessonModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
+      print('🔍 [DATASOURCE] Error fetching course lessons: ${e.toString()}');
       if (e is ServerException || e is NetworkException) {
         rethrow;
       }
@@ -130,11 +133,12 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
   }
 
   @override
-  Future<LessonModel> getCourseLesson({
-    required String courseId,
-    required String lessonId,
-  }) async {
+  Future<CourseLessonModel> getLessonDetail(
+    String courseId,
+    String lessonId,
+  ) async {
     try {
+      print('🔍 [DATASOURCE] Fetching lesson detail for: course=$courseId, lesson=$lessonId');
       final response = await client.get('/courses/$courseId/lessons/$lessonId');
 
       if (response.data == null) {
@@ -150,8 +154,10 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
         throw ServerException('Unexpected response format');
       }
 
-      return LessonModel.fromJson(lessonJson);
+      print('🔍 [DATASOURCE] Lesson detail fetched successfully');
+      return CourseLessonModel.fromJson(lessonJson);
     } catch (e) {
+      print('🔍 [DATASOURCE] Error fetching lesson detail: ${e.toString()}');
       if (e is ServerException || e is NetworkException) {
         rethrow;
       }

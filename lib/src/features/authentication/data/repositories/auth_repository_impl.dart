@@ -94,6 +94,36 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, User>> googleSignIn({
+    required String firebaseIdToken,
+  }) async {
+    if (!await networkInfo.isConnected) {
+      return const Left(NetworkFailure());
+    }
+
+    try {
+      final loginResponse = await remoteDataSource.googleSignIn(
+        firebaseIdToken: firebaseIdToken,
+      );
+
+      // Cache token and user data
+      await localDataSource.cacheAuthToken(loginResponse.token);
+      await localDataSource.cacheUserId(loginResponse.user.id);
+      apiClient.setAuthToken(loginResponse.token.accessToken);
+
+      return Right(loginResponse.user.toEntity());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(e.message));
+    } catch (e) {
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> signOut() async {
     try {
       if (await networkInfo.isConnected) {
@@ -106,6 +136,29 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Right(null);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(e.message));
+    } catch (e) {
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> revokeToken(String refreshToken) async {
+    if (!await networkInfo.isConnected) {
+      return const Left(NetworkFailure());
+    }
+
+    try {
+      await remoteDataSource.revokeToken(refreshToken);
+      await localDataSource.clearAuthToken();
+      apiClient.removeAuthToken();
+
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
     } on CacheException catch (e) {
       return Left(CacheFailure(e.message));
     } catch (e) {
