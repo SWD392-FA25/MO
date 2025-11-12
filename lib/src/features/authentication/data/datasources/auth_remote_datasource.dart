@@ -18,8 +18,7 @@ abstract class AuthRemoteDataSource {
   });
 
   Future<LoginResponseModel> googleSignIn({
-    required String idToken,
-    required String accessToken,
+    required String firebaseIdToken,
   });
 
   Future<void> signOut();
@@ -86,21 +85,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<LoginResponseModel> googleSignIn({
-    required String idToken,
-    required String accessToken,
+    required String firebaseIdToken,
   }) async {
     try {
       print('🔍 [DATASOURCE] Starting Google Sign-In request');
       
       final requestData = {
-        'FirebaseIdToken': idToken,
-        'accessToken': accessToken,
+        'FirebaseIdToken': firebaseIdToken,
       };
       
       print('🔍 [DATASOURCE] Request data keys: ${requestData.keys.toList()}');
-      print('🔍 [DATASOURCE] FirebaseIdToken length: ${idToken.length}');
-      print('🔍 [DATASOURCE] AccessToken length: ${accessToken.length}');
-      print('🔍 [DATASOURCE] FirebaseIdToken preview: ${idToken.substring(0, 100)}...');
+      print('🔍 [DATASOURCE] FirebaseIdToken length: ${firebaseIdToken.length}');
+      print('🔍 [DATASOURCE] FirebaseIdToken preview: ${firebaseIdToken.substring(0, 100)}...');
       
       final response = await client.post(
         '/Authentication/google-login',

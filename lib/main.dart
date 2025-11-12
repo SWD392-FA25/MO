@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'config/env.dart';
 import 'core/di/injection.dart';
@@ -33,6 +34,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   Env.setEnvironment(Environment.dev);
+
+  // Initialize Firebase
+  await Firebase.initializeApp();
 
   await setupDependencies();
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 
 import 'package:igcse_learning_hub/src/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:igcse_learning_hub/src/features/authentication/presentation/providers/auth_state.dart';
@@ -110,10 +111,28 @@ class _SignInPageState extends State<SignInPage> {
       print('Access Token: ${googleAuth.accessToken?.substring(0, 50)}...');
       print('Has ID Token: ${googleAuth.idToken != null}');
       print('Has Access Token: ${googleAuth.accessToken != null}');
+      
+      // STEP 2: Create Google credential for Firebase
+      final OAuthCredential googleCredential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
 
-      await authProvider.googleSignInWithGoogle(
-        idToken: googleAuth.idToken ?? '',
-        accessToken: googleAuth.accessToken ?? '',
+      // STEP 3: Sign in to Firebase with Google credential
+      final UserCredential firebaseUserCredential = await FirebaseAuth.instance.signInWithCredential(googleCredential);
+      print('🔍 DEBUG: Firebase authentication successful');
+      print('🔍 DEBUG: Firebase User UID: ${firebaseUserCredential.user?.uid}');
+
+      // STEP 4: Get Firebase ID Token
+      final String? firebaseIdToken = await firebaseUserCredential.user?.getIdToken();
+      if (firebaseIdToken == null) {
+        throw Exception('Failed to get Firebase ID token');
+      }
+      print('🔍 DEBUG: Firebase ID Token: ${firebaseIdToken.substring(0, 50)}...');
+
+      // STEP 5: Send Firebase ID token to API
+      await authProvider.googleSignInWithFirebase(
+        firebaseIdToken: firebaseIdToken,
       );
 
       if (!mounted) return;
@@ -130,6 +149,7 @@ class _SignInPageState extends State<SignInPage> {
         );
       }
     } catch (e) {
+      print('🔴 DEBUG: Google Sign-In error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

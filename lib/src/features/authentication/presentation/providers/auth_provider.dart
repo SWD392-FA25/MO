@@ -96,8 +96,7 @@ class AuthProvider extends ChangeNotifier {
 
     final result = await googleSignInUseCase(
       const GoogleSignInParams(
-        idToken: '', // Will be populated by Google Sign-In
-        accessToken: '', // Will be populated by Google Sign-In
+        firebaseIdToken: '', // Will be populated by Firebase Auth
       ),
     );
 
@@ -110,16 +109,14 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
-  Future<void> googleSignInWithGoogle({
-    required String idToken,
-    required String accessToken,
+  Future<void> googleSignInWithFirebase({
+    required String firebaseIdToken,
   }) async {
     _setState(const AuthLoading());
 
     final result = await googleSignInUseCase(
       GoogleSignInParams(
-        idToken: idToken,
-        accessToken: accessToken,
+        firebaseIdToken: firebaseIdToken,
       ),
     );
 

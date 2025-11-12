@@ -95,8 +95,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, User>> googleSignIn({
-    required String idToken,
-    required String accessToken,
+    required String firebaseIdToken,
   }) async {
     if (!await networkInfo.isConnected) {
       return const Left(NetworkFailure());
@@ -104,8 +103,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     try {
       final loginResponse = await remoteDataSource.googleSignIn(
-        idToken: idToken,
-        accessToken: accessToken,
+        firebaseIdToken: firebaseIdToken,
       );
 
       // Cache token and user data

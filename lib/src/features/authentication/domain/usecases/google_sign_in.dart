@@ -14,21 +14,18 @@ class GoogleSignIn extends UseCase<User, GoogleSignInParams> {
   @override
   Future<Either<Failure, User>> call(GoogleSignInParams params) async {
     return await repository.googleSignIn(
-      idToken: params.idToken,
-      accessToken: params.accessToken,
+      firebaseIdToken: params.firebaseIdToken,
     );
   }
 }
 
 class GoogleSignInParams extends Equatable {
-  final String idToken;
-  final String accessToken;
+  final String firebaseIdToken;
 
   const GoogleSignInParams({
-    required this.idToken,
-    required this.accessToken,
+    required this.firebaseIdToken,
   });
 
   @override
-  List<Object?> get props => [idToken, accessToken];
+  List<Object?> get props => [firebaseIdToken];
 }

@@ -18,8 +18,7 @@ abstract class AuthRepository {
   });
 
   Future<Either<Failure, User>> googleSignIn({
-    required String idToken,
-    required String accessToken,
+    required String firebaseIdToken,
   });
 
   Future<Either<Failure, void>> signOut();
