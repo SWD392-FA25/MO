@@ -6,32 +6,47 @@ import '../../domain/usecases/create_quiz_attempt.dart';
 import '../../domain/usecases/get_my_quiz_attempts.dart';
 import '../../domain/usecases/get_quiz_for_take.dart';
 import '../../domain/usecases/submit_quiz_attempt.dart';
+import '../../domain/usecases/get_quizzes.dart';
+import '../../domain/usecases/get_quiz_by_id.dart';
+import '../../domain/usecases/get_student_assignments.dart';
 
 class QuizProvider extends ChangeNotifier {
   final GetQuizForTake getQuizForTakeUseCase;
   final CreateQuizAttempt createQuizAttemptUseCase;
   final SubmitQuizAttempt submitQuizAttemptUseCase;
   final GetMyQuizAttempts getMyQuizAttemptsUseCase;
+  final GetQuizzes getQuizzesUseCase;
+  final GetQuizById getQuizByIdUseCase;
+  final GetStudentAssignments getStudentAssignmentsUseCase;
 
   QuizProvider({
     required this.getQuizForTakeUseCase,
     required this.createQuizAttemptUseCase,
     required this.submitQuizAttemptUseCase,
     required this.getMyQuizAttemptsUseCase,
+    required this.getQuizzesUseCase,
+    required this.getQuizByIdUseCase,
+    required this.getStudentAssignmentsUseCase,
   });
 
   // State
+  List<Quiz> _quizzes = [];
   Quiz? _currentQuiz;
+  Quiz? _selectedQuiz;
   QuizAttempt? _currentAttempt;
   List<QuizAttempt> _attempts = [];
+  List<Quiz> _assignments = [];
   Map<String, String> _answers = {};
   bool _isLoading = false;
   String? _errorMessage;
 
   // Getters
+  List<Quiz> get quizzes => _quizzes;
   Quiz? get currentQuiz => _currentQuiz;
+  Quiz? get selectedQuiz => _selectedQuiz;
   QuizAttempt? get currentAttempt => _currentAttempt;
   List<QuizAttempt> get attempts => _attempts;
+  List<Quiz> get assignments => _assignments;
   Map<String, String> get answers => _answers;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -143,6 +158,72 @@ class QuizProvider extends ChangeNotifier {
       },
       (attempts) {
         _attempts = attempts;
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  // Load all quizzes
+  Future<void> loadQuizzes() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await getQuizzesUseCase.call(NoParams());
+
+    result.fold(
+      (failure) {
+        _errorMessage = failure.message;
+        _isLoading = false;
+        notifyListeners();
+      },
+      (quizzes) {
+        _quizzes = quizzes;
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  // Load quiz by ID
+  Future<void> loadQuizById(String quizId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await getQuizByIdUseCase.call(quizId);
+
+    result.fold(
+      (failure) {
+        _errorMessage = failure.message;
+        _isLoading = false;
+        notifyListeners();
+      },
+      (quiz) {
+        _selectedQuiz = quiz;
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  // Load student assignments
+  Future<void> loadStudentAssignments() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await getStudentAssignmentsUseCase.call(NoParams());
+
+    result.fold(
+      (failure) {
+        _errorMessage = failure.message;
+        _isLoading = false;
+        notifyListeners();
+      },
+      (assignments) {
+        _assignments = assignments;
         _isLoading = false;
         notifyListeners();
       },

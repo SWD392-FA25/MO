@@ -40,10 +40,10 @@ class MyLearningBottomNav extends StatelessWidget {
               isActive: _isActiveRoute(context, '/my-courses'),
             ),
             _NavItem(
-              icon: Icons.receipt_long,
-              label: 'Đơn hàng',
-              onTap: () => context.go('/transactions'),
-              isActive: _isActiveRoute(context, '/transactions'),
+              icon: Icons.quiz,
+              label: 'Làm bài quiz',
+              onTap: () => context.go('/assignments'),
+              isActive: _isActiveRoute(context, '/assignments'),
             ),
             _NavItem(
               icon: Icons.person,

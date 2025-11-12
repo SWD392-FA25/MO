@@ -72,8 +72,10 @@ import '../../src/features/quiz/domain/repositories/quiz_repository.dart';
 import '../../src/features/quiz/domain/usecases/create_quiz_attempt.dart';
 import '../../src/features/quiz/domain/usecases/submit_quiz_attempt.dart';
 import '../../src/features/quiz/domain/usecases/get_quiz_for_take.dart';
-
 import '../../src/features/quiz/domain/usecases/get_my_quiz_attempts.dart';
+import '../../src/features/quiz/domain/usecases/get_quizzes.dart';
+import '../../src/features/quiz/domain/usecases/get_quiz_by_id.dart';
+import '../../src/features/quiz/domain/usecases/get_student_assignments.dart';
 import '../../src/features/catalog/data/repositories/livestream_repository_impl.dart';
 import '../../src/features/catalog/data/datasources/livestream_remote_datasource.dart';
 import '../../src/features/catalog/domain/repositories/livestream_repository.dart';
@@ -357,6 +359,9 @@ Future<void> _setupQuizzes() async {
   getIt.registerLazySingleton(() => CreateQuizAttempt(getIt()));
   getIt.registerLazySingleton(() => SubmitQuizAttempt(getIt()));
   getIt.registerLazySingleton(() => GetMyQuizAttempts(getIt()));
+  getIt.registerLazySingleton(() => GetQuizzes(getIt()));
+  getIt.registerLazySingleton(() => GetQuizById(getIt()));
+  getIt.registerLazySingleton(() => GetStudentAssignments(getIt()));
 
   getIt.registerFactory(
     () => QuizProvider(
@@ -364,6 +369,9 @@ Future<void> _setupQuizzes() async {
       createQuizAttemptUseCase: getIt(),
       submitQuizAttemptUseCase: getIt(),
       getMyQuizAttemptsUseCase: getIt(),
+      getQuizzesUseCase: getIt(),
+      getQuizByIdUseCase: getIt(),
+      getStudentAssignmentsUseCase: getIt(),
     ),
   );
 }

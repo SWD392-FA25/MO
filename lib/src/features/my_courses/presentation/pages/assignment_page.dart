@@ -12,8 +12,8 @@ class AssignmentPage extends StatefulWidget {
   const AssignmentPage({
     super.key,
     required this.courseId,
-    required this.lessonId,
-    required this.assignmentId,
+    this.lessonId = '',
+    this.assignmentId = '',
   });
 
   final String courseId;

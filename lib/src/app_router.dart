@@ -178,6 +178,13 @@ GoRouter buildRouter() {
         },
       ),
       GoRoute(
+        path: '/courses/:courseId/lessons/:lessonId/assignments/:assignmentId',
+        name: 'assignment_detail',
+        builder: (context, state) => AssignmentPage(
+          courseId: state.pathParameters['courseId']!,
+        ),
+      ),
+      GoRoute(
         path: '/courses/reviews',
         builder: (context, state) => const CourseReviewsPage(),
       ),
@@ -210,15 +217,9 @@ GoRouter buildRouter() {
             CourseCompletionPage(courseId: state.pathParameters['id']!),
       ),
       GoRoute(
-        path: '/quiz',
-        builder: (context, state) => const QuizPage(),
-      ),
-      GoRoute(
-        path: '/quiz/detail',
-        builder: (context, state) {
-          final id = state.uri.queryParameters['quiz'] ?? 'quiz-1';
-          return QuizDetailPage(quizId: id);
-        },
+        path: '/my-courses/:id/assignments',
+        builder: (context, state) =>
+            AssignmentPage(courseId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/lunaby',
@@ -281,6 +282,10 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/orders/:orderId',
         builder: (context, state) => OrderDetailPage(orderId: state.pathParameters['orderId']!),
+      ),
+      GoRoute(
+        path: '/quiz/:quizId',
+        builder: (context, state) => QuizPage(quizId: state.pathParameters['quizId']!),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

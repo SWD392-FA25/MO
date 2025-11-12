@@ -446,7 +446,9 @@ class _QuizContentView extends StatelessWidget {
         const SizedBox(height: 16),
         ElevatedButton.icon(
           onPressed: () {
-            // TODO: Navigate to quiz screen
+            // Navigate to quiz screen
+            // Assuming lesson.id is the quiz ID
+            context.push('/quiz/${lesson.id}');
           },
           icon: const Icon(Icons.quiz),
           label: const Text('Bắt đầu làm bài'),
