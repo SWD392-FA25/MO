@@ -7,8 +7,7 @@ import '../entities/lesson.dart';
 
 abstract class CourseRepository {
   Future<Either<Failure, List<Course>>> getCourses({
-    String? category,
-    String? search,
+    String? q,
     int? page,
     int? pageSize,
   });

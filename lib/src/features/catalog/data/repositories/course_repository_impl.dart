@@ -19,8 +19,7 @@ class CourseRepositoryImpl implements CourseRepository {
 
   @override
   Future<Either<Failure, List<Course>>> getCourses({
-    String? category,
-    String? search,
+    String? q,
     int? page,
     int? pageSize,
   }) async {
@@ -30,8 +29,7 @@ class CourseRepositoryImpl implements CourseRepository {
 
     try {
       final courseModels = await remoteDataSource.getCourses(
-        category: category,
-        search: search,
+        q: q,
         page: page,
         pageSize: pageSize,
       );

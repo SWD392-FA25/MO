@@ -29,7 +29,11 @@ abstract class AuthRepository {
 
   Future<Either<Failure, AuthToken>> refreshToken(String refreshToken);
 
-  Future<Either<Failure, void>> forgotPassword(String email);
+  Future<Either<Failure, void>> forgotPassword({
+    required String userNameOrEmail,
+    required String newPassword,
+    required String confirmNewPassword,
+  });
 
   Future<Either<Failure, void>> resetPassword({
     required String token,

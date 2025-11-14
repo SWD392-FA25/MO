@@ -3,10 +3,12 @@ import '../models/course_detail.dart';
 
 const List<String> categoryFilters = [
   'All',
-  'Creative Arts',
+  'Mathematics',
   'Sciences',
-  'Business',
-  'Technology',
+  'Languages',
+  'HumanitiesAndSocialSciences',
+  'Creative',
+  'TechnicalAndVocational',
 ];
 
 const List<Map<String, String>> homeCategories = [

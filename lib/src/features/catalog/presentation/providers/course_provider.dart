@@ -48,9 +48,9 @@ class CourseProvider extends ChangeNotifier {
 
   // Load courses
   Future<void> loadCourses({
-    String? category,
-    String? search,
+    String? q,
     bool refresh = false,
+    int pageSize = 20,
   }) async {
     if (_isLoading) return;
 
@@ -66,10 +66,9 @@ class CourseProvider extends ChangeNotifier {
 
     final result = await getCoursesUseCase.call(
       GetCoursesParams(
-        category: category,
-        search: search,
+        q: q,
         page: _currentPage,
-        pageSize: 20,
+        pageSize: pageSize,
       ),
     );
 
@@ -140,12 +139,7 @@ class CourseProvider extends ChangeNotifier {
 
   // Search courses
   Future<void> searchCourses(String query) async {
-    await loadCourses(search: query, refresh: true);
-  }
-
-  // Filter by category
-  Future<void> filterByCategory(String category) async {
-    await loadCourses(category: category, refresh: true);
+    await loadCourses(q: query, refresh: true);
   }
 
   // Refresh

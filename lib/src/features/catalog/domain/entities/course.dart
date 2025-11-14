@@ -11,6 +11,7 @@ class Course extends Equatable {
   final int? studentCount;
   final String? instructorName;
   final String? category;
+  final String? subjectGroup;
   final int? lessonCount;
   final int? duration;
   final String? level;
@@ -30,6 +31,7 @@ class Course extends Equatable {
     this.studentCount,
     this.instructorName,
     this.category,
+    this.subjectGroup,
     this.lessonCount,
     this.duration,
     this.level,
@@ -51,6 +53,7 @@ class Course extends Equatable {
         studentCount,
         instructorName,
         category,
+        subjectGroup,
         lessonCount,
         duration,
         level,

@@ -5,8 +5,7 @@ import '../models/course_model.dart';
 
 abstract class CourseRemoteDataSource {
   Future<List<CourseModel>> getCourses({
-    String? category,
-    String? search,
+    String? q,
     int? page,
     int? pageSize,
   });
@@ -28,16 +27,14 @@ class CourseRemoteDataSourceImpl implements CourseRemoteDataSource {
 
   @override
   Future<List<CourseModel>> getCourses({
-    String? category,
-    String? search,
+    String? q,
     int? page,
     int? pageSize,
   }) async {
     try {
       final queryParams = <String, dynamic>{};
-      if (category != null) queryParams['category'] = category;
-      if (search != null) queryParams['search'] = search;
-      if (page != null) queryParams['page'] = page;
+      if (q != null && q.isNotEmpty) queryParams['q'] = q;
+      if (page != null) queryParams['pageNumber'] = page;
       if (pageSize != null) queryParams['pageSize'] = pageSize;
 
       final response = await client.get(

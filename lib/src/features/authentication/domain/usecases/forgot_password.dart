@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/usecases/usecase.dart';
-import '../../../../../core/validators/input_validators.dart';
 import '../repositories/auth_repository.dart';
 
 class ForgotPassword extends UseCase<void, ForgotPasswordParams> {
@@ -13,20 +12,37 @@ class ForgotPassword extends UseCase<void, ForgotPasswordParams> {
 
   @override
   Future<Either<Failure, void>> call(ForgotPasswordParams params) async {
-    final emailError = InputValidators.email(params.email);
-    if (emailError != null) {
-      return Left(ValidationFailure(emailError));
+    if (params.userNameOrEmail.trim().isEmpty) {
+      return const Left(ValidationFailure('Please enter your email or username'));
     }
 
-    return await repository.forgotPassword(params.email);
+    if (params.newPassword.length < 6) {
+      return const Left(ValidationFailure('Password must be at least 6 characters'));
+    }
+
+    if (params.newPassword != params.confirmNewPassword) {
+      return const Left(ValidationFailure('Passwords do not match'));
+    }
+
+    return await repository.forgotPassword(
+      userNameOrEmail: params.userNameOrEmail,
+      newPassword: params.newPassword,
+      confirmNewPassword: params.confirmNewPassword,
+    );
   }
 }
 
 class ForgotPasswordParams extends Equatable {
-  final String email;
+  final String userNameOrEmail;
+  final String newPassword;
+  final String confirmNewPassword;
 
-  const ForgotPasswordParams(this.email);
+  const ForgotPasswordParams({
+    required this.userNameOrEmail,
+    required this.newPassword,
+    required this.confirmNewPassword,
+  });
 
   @override
-  List<Object?> get props => [email];
+  List<Object?> get props => [userNameOrEmail, newPassword, confirmNewPassword];
 }

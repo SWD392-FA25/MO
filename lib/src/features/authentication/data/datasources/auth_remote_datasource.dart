@@ -29,7 +29,11 @@ abstract class AuthRemoteDataSource {
 
   Future<AuthTokenModel> refreshToken(String refreshToken);
 
-  Future<void> forgotPassword(String email);
+  Future<void> forgotPassword({
+    required String userNameOrEmail,
+    required String newPassword,
+    required String confirmNewPassword,
+  });
 
   Future<void> resetPassword({
     required String token,
@@ -228,24 +232,25 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> forgotPassword(String email) async {
+  Future<void> forgotPassword({
+    required String userNameOrEmail,
+    required String newPassword,
+    required String confirmNewPassword,
+  }) async {
     try {
-      // Note: Swagger shows /Accounts/reset-password but requires userNameOrEmail + newPassword
-      // This might not be a "forgot password" flow, but a direct reset
-      // You may need to clarify with backend team
       await client.post(
         '/Accounts/reset-password',
         data: {
-          'userNameOrEmail': email,
-          'newPassword': '',
-          'confirmNewPassword': '',
+          'userNameOrEmail': userNameOrEmail,
+          'newPassword': newPassword,
+          'confirmNewPassword': confirmNewPassword,
         },
       );
     } catch (e) {
       if (e is ServerException || e is NetworkException) {
         rethrow;
       }
-      throw ServerException('Failed to send password reset: ${e.toString()}');
+      throw ServerException('Failed to reset password: ${e.toString()}');
     }
   }
 

@@ -189,15 +189,25 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
-  Future<void> forgotPassword(String email) async {
+  Future<void> forgotPassword({
+    required String userNameOrEmail,
+    required String newPassword,
+    required String confirmNewPassword,
+  }) async {
     _setState(const AuthLoading());
 
-    final result = await forgotPasswordUseCase(ForgotPasswordParams(email));
+    final result = await forgotPasswordUseCase(
+      ForgotPasswordParams(
+        userNameOrEmail: userNameOrEmail,
+        newPassword: newPassword,
+        confirmNewPassword: confirmNewPassword,
+      ),
+    );
 
     result.fold(
       (failure) => _setState(AuthError(failure.message)),
       (_) => _setState(
-        const AuthSuccess('Password reset email sent. Please check your inbox.'),
+        const AuthSuccess('Password reset successfully!'),
       ),
     );
   }

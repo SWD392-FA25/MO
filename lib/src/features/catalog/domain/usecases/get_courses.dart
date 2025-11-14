@@ -13,8 +13,7 @@ class GetCourses implements UseCase<List<Course>, GetCoursesParams> {
   @override
   Future<Either<Failure, List<Course>>> call(GetCoursesParams params) {
     return repository.getCourses(
-      category: params.category,
-      search: params.search,
+      q: params.q,
       page: params.page,
       pageSize: params.pageSize,
     );
@@ -22,14 +21,12 @@ class GetCourses implements UseCase<List<Course>, GetCoursesParams> {
 }
 
 class GetCoursesParams {
-  final String? category;
-  final String? search;
+  final String? q;
   final int? page;
   final int? pageSize;
 
   GetCoursesParams({
-    this.category,
-    this.search,
+    this.q,
     this.page,
     this.pageSize,
   });

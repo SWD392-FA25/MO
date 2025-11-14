@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:igcse_learning_hub/src/data/mock_data.dart';
+import 'package:igcse_learning_hub/src/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:igcse_learning_hub/src/features/catalog/presentation/providers/course_provider.dart';
 import 'package:igcse_learning_hub/src/models/course.dart';
 import 'package:igcse_learning_hub/src/models/course_extensions.dart';
@@ -21,13 +22,34 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedFilterIndex = 0;
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<CourseProvider>().loadCourses(refresh: true);
+      context.read<CourseProvider>().loadCourses(refresh: true, pageSize: 10);
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onFilterSelected(int index) {
+    setState(() {
+      _selectedFilterIndex = index;
+    });
+  }
+
+  void _onSearch(String query) {
+    context.read<CourseProvider>().loadCourses(
+      refresh: true,
+      pageSize: 10,
+      q: query.trim().isEmpty ? null : query.trim(),
+    );
   }
 
   @override
@@ -42,7 +64,11 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  await courseProvider.loadCourses(refresh: true);
+                  await courseProvider.loadCourses(
+                    refresh: true,
+                    pageSize: 10,
+                    q: _searchController.text.trim().isEmpty ? null : _searchController.text.trim(),
+                  );
                 },
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
@@ -54,22 +80,32 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     _Header(textTheme: textTheme),
                     const SizedBox(height: 24),
-                    SearchField(
-                      readOnly: true,
-                      onTap: () => context.push('/search'),
-                      trailing: FilterButton(
-                        onPressed: _openFilterSheet,
+                    TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Search courses...',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  _onSearch('');
+                                },
+                              )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(28),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
+                      onSubmitted: _onSearch,
+                      onChanged: (value) {
+                        setState(() {}); // Rebuild to show/hide clear button
+                      },
                     ),
-                    const SizedBox(height: 24),
-                    const _SpecialOfferCard(),
-                    const SizedBox(height: 28),
-                    _SectionHeading(
-                      title: 'Categories',
-                      onActionTap: () => context.push('/categories'),
-                    ),
-                    const SizedBox(height: 16),
-                    _CategoryScroller(items: homeCategories),
                     const SizedBox(height: 24),
                     _SectionHeading(
                       title: 'Popular Courses',
@@ -78,8 +114,7 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 16),
                     _FilterChips(
                       selectedIndex: _selectedFilterIndex,
-                      onSelected: (index) =>
-                          setState(() => _selectedFilterIndex = index),
+                      onSelected: _onFilterSelected,
                     ),
                     const SizedBox(height: 20),
                     ..._buildCoursesForFilter(),
@@ -128,8 +163,11 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () =>
-                      courseProvider.loadCourses(refresh: true),
+                  onPressed: () => courseProvider.loadCourses(
+                    refresh: true,
+                    pageSize: 10,
+                    q: _searchController.text.trim().isEmpty ? null : _searchController.text.trim(),
+                  ),
                   child: const Text('Retry'),
                 ),
               ],
@@ -139,11 +177,11 @@ class _HomePageState extends State<HomePage> {
       ];
     }
 
-    // Convert API courses to UI courses
-    final uiCourses = courseProvider.courses.toUIModels();
+    // Get courses from API
+    final courses = courseProvider.courses;
 
     // Show empty state
-    if (uiCourses.isEmpty) {
+    if (courses.isEmpty) {
       return [
         const Center(
           child: Padding(
@@ -157,15 +195,33 @@ class _HomePageState extends State<HomePage> {
       ];
     }
 
-    // Filter courses
-    final filter = categoryFilters[_selectedFilterIndex];
-    final Iterable<Course> filtered = filter == 'All'
-        ? uiCourses
-        : uiCourses.where(
-            (course) => course.category == filter || course.subject == filter,
-          );
+    // Filter courses by subjectGroup on client-side
+    final selectedSubjectGroup = _selectedFilterIndex == 0 
+        ? null 
+        : categoryFilters[_selectedFilterIndex];
+    
+    final filteredCourses = selectedSubjectGroup == null
+        ? courses
+        : courses.where((course) => course.subjectGroup == selectedSubjectGroup).toList();
 
-    return filtered
+    // Show empty state if no courses match filter
+    if (filteredCourses.isEmpty) {
+      return [
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(32.0),
+            child: Text(
+              'No courses found for this category',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    // Convert to UI models and display
+    final uiCourses = filteredCourses.toUIModels();
+    return uiCourses
         .map(
           (course) => Padding(
             padding: const EdgeInsets.only(bottom: 16),
@@ -198,6 +254,9 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final userName = authProvider.currentUser?.name ?? 'Guest';
+    
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -206,7 +265,7 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hi, Shirayuki Luna',
+                'Hi, $userName',
                 style: textTheme.titleLarge?.copyWith(fontSize: 24),
               ),
               const SizedBox(height: 8),
