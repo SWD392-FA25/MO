@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/di/injection.dart';
-import 'features/ai_chat/presentation/pages/ai_chat_page.dart';
 import 'features/authentication/presentation/providers/auth_provider.dart';
 import 'features/authentication/presentation/pages/auth_completion_page.dart';
 import 'features/authentication/presentation/pages/auth_welcome_page.dart';
@@ -131,11 +130,6 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/dashboard',
         builder: (context, state) => const DashboardPage(),
-      ),
-      GoRoute(
-        path: '/ai-tutor',
-        name: 'ai_tutor',
-        builder: (context, state) => const AiChatPage(),
       ),
       GoRoute(path: '/', redirect: (context, state) => '/dashboard'),
       GoRoute(

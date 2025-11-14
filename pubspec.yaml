@@ -1,6 +1,6 @@
 name: igcse_learning_hub
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -16,21 +16,21 @@ dependencies:
   google_sign_in: ^6.2.1
   firebase_auth: ^5.1.1
   firebase_core: ^3.1.0
-  
+
   # AI Integration
-  flutter_gemini: ^2.0.4
-  
+  google_generative_ai: ^0.4.6
+
   # Architecture & DI
   get_it: ^7.6.4
   dartz: ^0.10.1
   equatable: ^2.0.5
-  
+
   # Security & Storage
   flutter_secure_storage: ^9.0.0
-  
+
   # Utilities
   connectivity_plus: ^5.0.2
-  
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
