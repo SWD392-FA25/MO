@@ -43,14 +43,7 @@ class _FillProfilePageState extends State<FillProfilePage> {
                     icon: const Icon(Icons.arrow_back_ios_new_rounded),
                   ),
                   const Spacer(),
-                  const AppLogo(size: 48),
-                  const SizedBox(width: 12),
-                  Text(
-                    'IGCSE MASTERY',
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  const AppLogo(height: 48),
                 ],
               ),
               const SizedBox(height: 32),

@@ -73,18 +73,20 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     final page = _pages[index];
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const Spacer(),
-                        _IllustrationPlaceholder(index: index),
-                        const SizedBox(height: 60),
                         Text(
                           page.title,
-                          style: Theme.of(context).textTheme.titleLarge,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Text(
                           page.description,
+                          textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: AppColors.textSecondary),
                         ),
@@ -119,40 +121,7 @@ class _OnboardingContent {
   final String description;
 }
 
-class _IllustrationPlaceholder extends StatelessWidget {
-  const _IllustrationPlaceholder({required this.index});
 
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = [
-      [const Color(0xFF8EA9FF), AppColors.primary],
-      [const Color(0xFFFF9DCB), AppColors.accent],
-      [const Color(0xFFA3F3FF), const Color(0xFF3BC2E6)],
-    ];
-    final gradient = LinearGradient(
-      colors: colors[index % colors.length],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-    return Center(
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.75,
-        height: MediaQuery.of(context).size.width * 0.75,
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(48),
-        ),
-        child: const Icon(
-          Icons.auto_graph_rounded,
-          size: 96,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-}
 
 class _PageIndicator extends StatelessWidget {
   const _PageIndicator({required this.activeIndex, required this.total});

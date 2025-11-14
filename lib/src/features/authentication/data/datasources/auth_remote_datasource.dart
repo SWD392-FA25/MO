@@ -194,19 +194,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> getCurrentUser() async {
     try {
-      // Parse user info from JWT token claims
-      // JWT format: header.payload.signature
-      // Payload contains user claims including userId
-      
-      // For now, return a basic user model
-      // The real user data should come from login/register response
-      // and be cached in AuthProvider
-      
-      return const UserModel(
-        id: 'jwt-user',
-        email: 'user@example.com', 
-        name: 'User',
-      );
+      // This endpoint is not available in the current API
+      // User data is cached in AuthProvider after login/register
+      // If this is called, it means we need to re-authenticate
+      throw UnauthorizedException('User session expired. Please login again.');
     } catch (e) {
       if (e is ServerException || e is NetworkException || e is UnauthorizedException) {
         rethrow;

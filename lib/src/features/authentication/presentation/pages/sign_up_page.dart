@@ -179,14 +179,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       icon: const Icon(Icons.arrow_back_ios_new_rounded),
                     ),
                     const Spacer(),
-                    const AppLogo(size: 48),
-                    const SizedBox(width: 12),
-                    Text(
-                      'IGCSE MASTERY',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    const AppLogo(height: 48),
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -306,30 +299,37 @@ class _SignUpPageState extends State<SignUpPage> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: isLoading ? null : _handleGoogleSignIn,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEA4235),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 18,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(
-                        Icons.g_mobiledata_rounded,
-                        size: 36,
-                        color: Colors.white,
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : _handleGoogleSignIn,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEA4335),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
                       ),
-                      SizedBox(width: 12),
-                      Text('Continue with Google'),
-                    ],
+                      elevation: 0,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Continue with Google',
+                          style: textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Icon(
+                          Icons.arrow_forward,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
