@@ -20,23 +20,31 @@ abstract class OrderRepository {
   });
 
   Future<Either<Failure, String>> retryCheckout(String orderId);
+
+  Future<Either<Failure, void>> cashPayment(String orderId);
+
+  Future<Either<Failure, void>> enrollSync(String orderId);
 }
 
 class OrderItemRequest {
-  final String itemType;
-  final String itemId;
+  final String courseId;
   final int quantity;
 
   OrderItemRequest({
-    required this.itemType,
-    required this.itemId,
+    required this.courseId,
     this.quantity = 1,
   });
 
   Map<String, dynamic> toJson() {
+    final parsedId = int.tryParse(courseId) ?? 0;
+    print('🔍 OrderItemRequest.toJson():');
+    print('   courseId (String): "$courseId"');
+    print('   parsedId (int): $parsedId');
+    
+    // Backend expects itemType and itemId instead of courseId
     return {
-      'itemType': itemType,
-      'itemId': itemId,
+      'itemType': 'Course',
+      'itemId': parsedId,
       'quantity': quantity,
     };
   }

@@ -15,7 +15,7 @@ class OrderModel extends OrderEntity {
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
-      id: json['id']?.toString() ?? '',
+      id: json['orderId']?.toString() ?? json['id']?.toString() ?? '',
       userId: json['userId']?.toString() ?? json['customerId']?.toString() ?? '',
       items: (json['items'] as List<dynamic>?)
               ?.map((item) => OrderItemModel.fromJson(item as Map<String, dynamic>))
@@ -27,7 +27,9 @@ class OrderModel extends OrderEntity {
       paymentId: json['paymentId']?.toString(),
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
+          : json['orderDate'] != null
+              ? DateTime.parse(json['orderDate'])
+              : DateTime.now(),
       paidAt: json['paidAt'] != null ? DateTime.parse(json['paidAt']) : null,
     );
   }

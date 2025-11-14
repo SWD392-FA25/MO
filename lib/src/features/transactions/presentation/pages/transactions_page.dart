@@ -24,35 +24,21 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: const Text('Transactions'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Đơn hàng'),
-              Tab(text: 'Phương thức'),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          children: [
-            Consumer<OrderProvider>(
-              builder: (context, orderProvider, _) {
-                return _OrdersList(
-                  orders: orderProvider.orders ?? [],
-                  onTap: (order) => context.push('/orders/${order.id}'),
-                  loading: orderProvider.isLoading ?? false,
-                  errorMessage: orderProvider.errorMessage,
-                  onRetry: () => orderProvider.loadOrders(),
-                );
-              },
-            ),
-            const _PaymentMethodsList(),
-          ],
-        ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Transactions'),
+      ),
+      body: Consumer<OrderProvider>(
+        builder: (context, orderProvider, _) {
+          return _OrdersList(
+            orders: orderProvider.orders ?? [],
+            onTap: (order) => context.push('/orders/${order.id}'),
+            loading: orderProvider.isLoading ?? false,
+            errorMessage: orderProvider.errorMessage,
+            onRetry: () => orderProvider.loadOrders(),
+          );
+        },
       ),
     );
   }
@@ -102,7 +88,7 @@ class _OrdersList extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRetry,
-              child: const Text('Thử lại'),
+              child: const Text('Retry'),
             ),
           ],
         ),
@@ -121,7 +107,7 @@ class _OrdersList extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Chưa có đơn hàng nào',
+              'No orders yet',
               style: TextStyle(
                 fontSize: 16,
                 color: AppColors.textSecondary,
@@ -200,7 +186,7 @@ class _OrderCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Đơn hàng #${order.id.toString().substring(0, 8)}',
+                            'Order #${order.id}',
                             style: textTheme.titleMedium,
                           ),
                           Container(
@@ -224,7 +210,7 @@ class _OrderCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${order.items.length} khóa học',
+                        '${order.items.length} ${order.items.length == 1 ? 'course' : 'courses'}',
                         style: textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -292,14 +278,14 @@ class _OrderCard extends StatelessWidget {
   String _getOrderStatusText(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'Đang xử lý';
+        return 'Pending';
       case 'paid':
       case 'completed':
-        return 'Hoàn thành';
+        return 'Completed';
       case 'failed':
-        return 'Thất bại';
+        return 'Failed';
       case 'cancelled':
-        return 'Đã hủy';
+        return 'Cancelled';
       default:
         return status;
     }
@@ -310,36 +296,4 @@ class _OrderCard extends StatelessWidget {
   }
 }
 
-class _PaymentMethodsList extends StatelessWidget {
-  const _PaymentMethodsList({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.payment,
-            size: 64,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Phương thức thanh toán sẽ được hiển thị ở đây',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: () => context.push('/payments/methods'),
-            icon: const Icon(Icons.add),
-            label: const Text('Thêm phương thức'),
-          ),
-        ],
-      ),
-    );
-  }
-}

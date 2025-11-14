@@ -111,11 +111,6 @@ class _HomePageState extends State<HomePage> {
                       title: 'Popular Courses',
                       onActionTap: () => context.push('/courses/popular'),
                     ),
-                    const SizedBox(height: 16),
-                    _FilterChips(
-                      selectedIndex: _selectedFilterIndex,
-                      onSelected: _onFilterSelected,
-                    ),
                     const SizedBox(height: 20),
                     ..._buildCoursesForFilter(),
                     const SizedBox(height: 80),
@@ -195,32 +190,8 @@ class _HomePageState extends State<HomePage> {
       ];
     }
 
-    // Filter courses by subjectGroup on client-side
-    final selectedSubjectGroup = _selectedFilterIndex == 0 
-        ? null 
-        : categoryFilters[_selectedFilterIndex];
-    
-    final filteredCourses = selectedSubjectGroup == null
-        ? courses
-        : courses.where((course) => course.subjectGroup == selectedSubjectGroup).toList();
-
-    // Show empty state if no courses match filter
-    if (filteredCourses.isEmpty) {
-      return [
-        const Center(
-          child: Padding(
-            padding: EdgeInsets.all(32.0),
-            child: Text(
-              'No courses found for this category',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
-        ),
-      ];
-    }
-
-    // Convert to UI models and display
-    final uiCourses = filteredCourses.toUIModels();
+    // Convert to UI models and display (no filtering)
+    final uiCourses = courses.toUIModels();
     return uiCourses
         .map(
           (course) => Padding(
@@ -239,8 +210,8 @@ class _HomePageState extends State<HomePage> {
       context: context,
       options: categoryFilters,
       selectedIndex: _selectedFilterIndex,
-      title: 'Lọc khoá học',
-      description: 'Chọn danh mục để hiển thị các khoá học phù hợp.',
+      title: 'Filter Courses',
+      description: 'Select a category to display relevant courses.',
     );
     if (!mounted || selected == null) return;
     setState(() => _selectedFilterIndex = selected);

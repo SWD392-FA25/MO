@@ -62,7 +62,7 @@ class _SearchPageState extends State<SearchPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SearchField(
                 controller: _controller,
-                hintText: 'Tìm khóa học, chủ đề, giáo viên...',
+                hintText: 'Search courses, topics, instructors...',
                 onChanged: (value) => setState(() => _query = value.trim()),
                 trailing: FilterButton(onPressed: _openFilterSheet),
               ),
@@ -168,7 +168,7 @@ class _SearchPageState extends State<SearchPage> {
       context: context,
       options: categoryFilters,
       selectedIndex: _selectedCategory,
-      title: 'Lọc kết quả tìm kiếm',
+      title: 'Filter Search Results',
     );
     if (!mounted || selected == null) return;
     setState(() => _selectedCategory = selected);
@@ -204,12 +204,12 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Không tìm thấy kết quả',
+              'No results found',
               style: textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
             Text(
-              'Hãy thử lại với từ khóa khác hoặc chọn danh mục khác phù hợp hơn.',
+              'Try again with different keywords or select another category.',
               style: textTheme.bodyMedium?.copyWith(
                 color: AppColors.textSecondary,
               ),
@@ -218,7 +218,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: onReset,
-              child: const Text('Làm mới bộ lọc'),
+              child: const Text('Reset Filters'),
             ),
           ],
         ),

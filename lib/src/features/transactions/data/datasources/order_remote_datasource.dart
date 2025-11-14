@@ -18,6 +18,10 @@ abstract class OrderRemoteDataSource {
   });
 
   Future<String> retryCheckout(String orderId);
+
+  Future<void> cashPayment(String orderId);
+
+  Future<void> enrollSync(String orderId);
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -40,15 +44,23 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       }
 
       final data = response.data;
+      print('🔍 Create Order Response:');
+      print('   Full response: $data');
+      
       Map<String, dynamic> orderJson;
 
       if (data is Map<String, dynamic>) {
         orderJson = data['data'] ?? data;
+        print('   Order JSON: $orderJson');
+        print('   Order ID from response: ${orderJson['id']}');
       } else {
         throw ServerException('Unexpected response format');
       }
 
-      return OrderModel.fromJson(orderJson);
+      final orderModel = OrderModel.fromJson(orderJson);
+      print('   Parsed Order ID: "${orderModel.id}"');
+      
+      return orderModel;
     } catch (e) {
       if (e is ServerException || e is NetworkException) {
         rethrow;
@@ -205,6 +217,30 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         rethrow;
       }
       throw ServerException('Failed to retry checkout: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> cashPayment(String orderId) async {
+    try {
+      await client.post('/admin/orders/$orderId/cash-payment');
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Failed to process cash payment: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> enrollSync(String orderId) async {
+    try {
+      await client.post('/admin/orders/$orderId/enroll-sync');
+    } catch (e) {
+      if (e is ServerException || e is NetworkException) {
+        rethrow;
+      }
+      throw ServerException('Failed to sync enrollment: ${e.toString()}');
     }
   }
 }

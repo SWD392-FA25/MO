@@ -131,4 +131,40 @@ class OrderRepositoryImpl implements OrderRepository {
       return Left(UnknownFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> cashPayment(String orderId) async {
+    if (!await networkInfo.isConnected) {
+      return const Left(NetworkFailure());
+    }
+
+    try {
+      await remoteDataSource.cashPayment(orderId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } catch (e) {
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> enrollSync(String orderId) async {
+    if (!await networkInfo.isConnected) {
+      return const Left(NetworkFailure());
+    }
+
+    try {
+      await remoteDataSource.enrollSync(orderId);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } catch (e) {
+      return Left(UnknownFailure(e.toString()));
+    }
+  }
 }

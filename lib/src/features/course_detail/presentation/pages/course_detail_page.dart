@@ -7,6 +7,7 @@ import '../../../catalog/domain/entities/course_lesson.dart';
 import '../../../catalog/presentation/providers/course_provider.dart';
 import '../../../../shared/presentation/widgets/primary_capsule_button.dart';
 import '../../../../theme/design_tokens.dart';
+import '../widgets/payment_method_dialog.dart';
 
 class CourseDetailPage extends StatefulWidget {
   const CourseDetailPage({
@@ -284,7 +285,7 @@ class _CourseDetailContent extends StatelessWidget {
                   PrimaryCapsuleButton(
                     label: 'Enroll now',
                     icon: Icons.arrow_forward_rounded,
-                    onPressed: () => context.push('/payments/methods?course=${course.id}'),
+                    onPressed: () => _showPaymentMethodDialog(context, course),
                   ),
                 ],
               ),
@@ -822,13 +823,13 @@ class _MissingDetailState extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'Không tìm thấy khóa học',
+                'Course not found',
                 style: textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                'Không tìm thấy nội dung cho khóa học $courseId',
+                'Could not find content for course $courseId',
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -836,7 +837,7 @@ class _MissingDetailState extends StatelessWidget {
               ),
               const Spacer(),
               PrimaryCapsuleButton(
-                label: 'Quay lại',
+                label: 'Go Back',
                 icon: Icons.arrow_back_rounded,
                 onPressed: onBack,
               ),
@@ -846,4 +847,24 @@ class _MissingDetailState extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showPaymentMethodDialog(BuildContext context, Course course) {
+  showDialog(
+    context: context,
+    builder: (context) => PaymentMethodDialog(
+      courseId: course.id,
+      price: course.price,
+      onPaymentSuccess: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment successful! You are now enrolled.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Optionally navigate to my courses
+        // context.go('/my-courses');
+      },
+    ),
+  );
 }

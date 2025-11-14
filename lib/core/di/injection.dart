@@ -65,6 +65,8 @@ import '../../src/features/transactions/domain/repositories/payment_repository.d
 import '../../src/features/transactions/domain/usecases/checkout_order.dart';
 import '../../src/features/transactions/domain/usecases/create_order.dart';
 import '../../src/features/transactions/domain/usecases/get_my_orders.dart';
+import '../../src/features/transactions/domain/usecases/cash_payment.dart';
+import '../../src/features/transactions/domain/usecases/enroll_sync.dart';
 import '../../src/features/my_courses/domain/usecases/submit_assignment.dart';
 import '../../src/features/transactions/domain/usecases/create_vnpay_checkout.dart';
 import '../../src/features/catalog/data/datasources/package_remote_datasource.dart';
@@ -279,12 +281,17 @@ Future<void> _setupOrders() async {
   getIt.registerLazySingleton(() => CreateOrder(getIt()));
   getIt.registerLazySingleton(() => GetMyOrders(getIt()));
   getIt.registerLazySingleton(() => CheckoutOrder(getIt()));
+  getIt.registerLazySingleton(() => CashPayment(getIt()));
+  getIt.registerLazySingleton(() => EnrollSync(getIt()));
 
   getIt.registerFactory(
     () => OrderProvider(
       createOrderUseCase: getIt(),
       getMyOrdersUseCase: getIt(),
       checkoutOrderUseCase: getIt(),
+      cashPaymentUseCase: getIt(),
+      enrollSyncUseCase: getIt(),
+      repository: getIt(),
     ),
   );
 }

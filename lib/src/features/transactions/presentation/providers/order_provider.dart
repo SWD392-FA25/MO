@@ -6,16 +6,24 @@ import '../../domain/repositories/order_repository.dart';
 import '../../domain/usecases/checkout_order.dart';
 import '../../domain/usecases/create_order.dart';
 import '../../domain/usecases/get_my_orders.dart';
+import '../../domain/usecases/cash_payment.dart';
+import '../../domain/usecases/enroll_sync.dart';
 
 class OrderProvider extends ChangeNotifier {
   final CreateOrder createOrderUseCase;
   final GetMyOrders getMyOrdersUseCase;
   final CheckoutOrder checkoutOrderUseCase;
+  final CashPayment cashPaymentUseCase;
+  final EnrollSync enrollSyncUseCase;
+  final OrderRepository repository;
 
   OrderProvider({
     required this.createOrderUseCase,
     required this.getMyOrdersUseCase,
     required this.checkoutOrderUseCase,
+    required this.cashPaymentUseCase,
+    required this.enrollSyncUseCase,
+    required this.repository,
   });
 
   // State
@@ -141,5 +149,114 @@ class OrderProvider extends ChangeNotifier {
     _currentOrder = null;
     _checkoutUrl = null;
     notifyListeners();
+  }
+
+  // Cash payment
+  Future<bool> processCashPayment(String orderId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      print('🔍 processCashPayment called with orderId: "$orderId" (length: ${orderId.length})');
+      
+      final result = await cashPaymentUseCase(CashPaymentParams(orderId: orderId));
+
+      return result.fold(
+        (failure) {
+          print('❌ Cash payment failure: ${failure.message}');
+          _errorMessage = failure.message;
+          _isLoading = false;
+          notifyListeners();
+          return false;
+        },
+        (_) {
+          print('✅ Cash payment success');
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        },
+      );
+    } catch (e, stackTrace) {
+      print('❌ Exception in processCashPayment: $e');
+      print('Stack trace: $stackTrace');
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Enroll sync
+  Future<bool> syncEnrollment(String orderId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await enrollSyncUseCase(EnrollSyncParams(orderId: orderId));
+
+    return result.fold(
+      (failure) {
+        _errorMessage = failure.message;
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      },
+      (_) {
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      },
+    );
+  }
+
+  // Complete cash payment flow (create order + cash payment + enroll sync)
+  Future<bool> completeCashPaymentFlow(String courseId) async {
+    try {
+      print('🔵 Starting cash payment flow for courseId: $courseId');
+      
+      // Step 1: Create order
+      final order = await createOrder([
+        OrderItemRequest(
+          courseId: courseId,
+          quantity: 1,
+        ),
+      ]);
+
+      if (order == null || _errorMessage != null) {
+        print('❌ Failed to create order: $_errorMessage');
+        return false;
+      }
+
+      print('✅ Order created successfully: ${order.id}');
+
+      // Step 2: Process cash payment
+      print('🔵 Processing cash payment for order: ${order.id}');
+      final paymentSuccess = await processCashPayment(order.id);
+      if (!paymentSuccess) {
+        print('❌ Cash payment failed: $_errorMessage');
+        return false;
+      }
+
+      print('✅ Cash payment processed successfully');
+
+      // Step 3: Sync enrollment
+      print('🔵 Syncing enrollment for order: ${order.id}');
+      final enrollSuccess = await syncEnrollment(order.id);
+      
+      if (enrollSuccess) {
+        print('✅ Enrollment synced successfully');
+      } else {
+        print('❌ Enrollment sync failed: $_errorMessage');
+      }
+      
+      return enrollSuccess;
+    } catch (e) {
+      print('❌ Exception in cash payment flow: $e');
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
   }
 }

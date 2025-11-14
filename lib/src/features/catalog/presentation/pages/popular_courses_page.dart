@@ -63,26 +63,6 @@ class _PopularCoursesPageState extends State<PopularCoursesPage> {
               ),
             ),
             const SizedBox(height: 8),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  for (var i = 0; i < categoryFilters.length; i++)
-                    Padding(
-                      padding: EdgeInsets.only(
-                        right: i == categoryFilters.length - 1 ? 0 : 12,
-                      ),
-                      child: ChoiceChip(
-                        selected: _selectedFilterIndex == i,
-                        onSelected: (_) => _onFilterSelected(i),
-                        label: Text(categoryFilters[i]),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
             Expanded(
               child: _buildCoursesList(courseProvider),
             ),
@@ -142,30 +122,8 @@ class _PopularCoursesPageState extends State<PopularCoursesPage> {
       );
     }
 
-    // Filter courses by subjectGroup on client-side
-    final selectedSubjectGroup = _selectedFilterIndex == 0 
-        ? null 
-        : categoryFilters[_selectedFilterIndex];
-    
-    final filteredCourses = selectedSubjectGroup == null
-        ? courses
-        : courses.where((course) => course.subjectGroup == selectedSubjectGroup).toList();
-
-    // Show empty state if no courses match filter
-    if (filteredCourses.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: Text(
-            'No courses found for this category',
-            style: TextStyle(color: AppColors.textSecondary),
-          ),
-        ),
-      );
-    }
-
-    // Convert to UI models and display
-    final uiCourses = filteredCourses.toUIModels();
+    // Convert to UI models and display (no filtering)
+    final uiCourses = courses.toUIModels();
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: uiCourses.length,

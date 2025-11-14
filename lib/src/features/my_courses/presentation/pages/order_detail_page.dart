@@ -19,7 +19,7 @@ class OrderDetailPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Chi tiết đơn hàng #$orderId'),
+        title: Text('Order Details #$orderId'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
@@ -63,7 +63,7 @@ class OrderDetailPage extends StatelessWidget {
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => orderProvider.loadOrderById(orderId),
-                        child: const Text('Thử lại'),
+                        child: const Text('Retry'),
                       ),
                     ],
                   ),
@@ -72,7 +72,7 @@ class OrderDetailPage extends StatelessWidget {
 
               if (orderProvider.selectedOrder == null) {
                 return const Center(
-                  child: Text('Không tìm thấy đơn hàng'),
+                  child: Text('Order not found'),
                 );
               }
 
@@ -108,7 +108,7 @@ class OrderDetailPage extends StatelessWidget {
                               if (orderProvider.errorMessage == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Đã gửi lại yêu cầu thanh toán'),
+                                    content: Text('Payment request resent'),
                                   ),
                                 );
                               } else {
@@ -122,7 +122,7 @@ class OrderDetailPage extends StatelessWidget {
                             });
                           },
                           icon: const Icon(Icons.refresh),
-                          label: const Text('Thử lại thanh toán'),
+                          label: const Text('Retry Payment'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
@@ -137,29 +137,24 @@ class OrderDetailPage extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            orderProvider.checkoutOrder(order.id).then((_) {
-                              if (orderProvider.errorMessage == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Đã bắt đầu thanh toán'),
-                                  ),
-                                );
-                                if (order.paymentUrl != null) {
-                                  // TODO: Open payment URL
-                                }
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(orderProvider.errorMessage!),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
-                            });
+                          onPressed: () async {
+                            final success = await orderProvider.checkoutOrder(order.id);
+                            if (!context.mounted) return;
+                            
+                            if (success && orderProvider.checkoutUrl != null) {
+                              // Open VNPay URL in browser
+                              context.push('/payment/vnpay?url=${Uri.encodeComponent(orderProvider.checkoutUrl!)}');
+                            } else if (orderProvider.errorMessage != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(orderProvider.errorMessage!),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           },
                           icon: const Icon(Icons.payment),
-                          label: const Text('Thanh toán ngay'),
+                          label: const Text('Pay Now'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
@@ -210,7 +205,7 @@ class _OrderStatusCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Trạng thái đơn hàng',
+            'Order Status',
             style: textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
@@ -257,16 +252,16 @@ class _OrderStatusCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _OrderInfoRow(
-            label: 'Mã đơn hàng',
+            label: 'Order ID',
             value: order.id,
           ),
           _OrderInfoRow(
-            label: 'Ngày tạo',
+            label: 'Created At',
             value: _formatFullDate(order.createdAt),
           ),
           if (order.paidAt != null)
             _OrderInfoRow(
-              label: 'Ngày thanh toán',
+              label: 'Paid At',
               value: _formatFullDate(order.paidAt!),
             ),
         ],
@@ -303,7 +298,7 @@ class _OrderItemsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Sản phẩm',
+            'Items',
             style: textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
@@ -331,11 +326,11 @@ class _OrderItemsCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item.course?.title ?? 'Khóa học #${item.courseId}',
+                          item.course?.title ?? 'Course #${item.courseId}',
                           style: textTheme.titleSmall,
                         ),
                         Text(
-                          'Số lượng: ${item.quantity}',
+                          'Quantity: ${item.quantity}',
                           style: textTheme.bodySmall?.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -387,25 +382,25 @@ class _OrderSummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Tóm tắt đơn hàng',
+            'Order Summary',
             style: textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
           _OrderSummaryRow(
-            label: 'Tổng tiền hàng',
+            label: 'Subtotal',
             value: '\$${order.totalAmount.toStringAsFixed(2)}',
           ),
           _OrderSummaryRow(
-            label: 'Phí vận chuyển',
+            label: 'Shipping',
             value: '\$0.00',
           ),
           _OrderSummaryRow(
-            label: 'Thuế',
+            label: 'Tax',
             value: '\$0.00',
           ),
           const Divider(),
           _OrderSummaryRow(
-            label: 'Tổng cộng',
+            label: 'Total',
             value: '\$${order.totalAmount.toStringAsFixed(2)}',
             isBold: true,
           ),
@@ -523,14 +518,14 @@ Color _getOrderStatusColor(String status) {
 String _getOrderStatusText(String status) {
   switch (status.toLowerCase()) {
     case 'pending':
-      return 'Đang xử lý';
+      return 'Pending';
     case 'paid':
     case 'completed':
-      return 'Hoàn thành';
+      return 'Completed';
     case 'failed':
-      return 'Thất bại';
+      return 'Failed';
     case 'cancelled':
-      return 'Đã hủy';
+      return 'Cancelled';
     default:
       return status;
   }

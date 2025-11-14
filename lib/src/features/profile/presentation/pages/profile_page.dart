@@ -335,7 +335,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 decoration: const InputDecoration(labelText: 'Họ và tên'),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Vui lòng nhập họ tên';
+                    return 'Please enter your full name';
                   }
                   return null;
                 },
