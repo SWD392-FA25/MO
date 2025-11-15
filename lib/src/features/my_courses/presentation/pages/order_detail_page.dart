@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/order_provider.dart';
-import '../../domain/entities/order.dart';
+import '../../../transactions/presentation/providers/order_provider.dart';
+import '../../../transactions/domain/entities/order.dart';
 import '../../../../theme/design_tokens.dart';
 
 class OrderDetailPage extends StatelessWidget {
@@ -99,51 +99,17 @@ class OrderDetailPage extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // Action Buttons
-                    if (order.canRetry) ...[
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            orderProvider.retryCheckout(order.id).then((_) {
-                              if (orderProvider.errorMessage == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Payment request resent'),
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(orderProvider.errorMessage!),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
-                            });
-                          },
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry Payment'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      )
-                    ] else if (order.isPending) ...[
+                    if (order.isPending) ...[
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () async {
-                            final success = await orderProvider.checkoutOrder(order.id);
+                            final checkoutUrl = await orderProvider.checkoutOrder(order.id, 'vnpay');
                             if (!context.mounted) return;
                             
-                            if (success && orderProvider.checkoutUrl != null) {
+                            if (checkoutUrl != null) {
                               // Open VNPay URL in browser
-                              context.push('/payment/vnpay?url=${Uri.encodeComponent(orderProvider.checkoutUrl!)}');
+                              context.push('/payment/vnpay?url=${Uri.encodeComponent(checkoutUrl)}');
                             } else if (orderProvider.errorMessage != null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -182,7 +148,7 @@ class _OrderStatusCard extends StatelessWidget {
     required this.order,
   });
 
-  final Order order;
+  final OrderEntity order;
 
   @override
   Widget build(BuildContext context) {
@@ -235,15 +201,7 @@ class _OrderStatusCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      if (order.failureReason != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          order.failureReason!,
-                          style: textTheme.bodySmall?.copyWith(
-                            color: _getOrderStatusColor(order.status),
-                          ),
-                        ),
-                      ],
+
                     ],
                   ),
                 ),
@@ -275,7 +233,7 @@ class _OrderItemsCard extends StatelessWidget {
     required this.order,
   });
 
-  final Order order;
+  final OrderEntity order;
 
   @override
   Widget build(BuildContext context) {
@@ -326,7 +284,7 @@ class _OrderItemsCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item.course?.title ?? 'Course #${item.courseId}',
+                          item.itemName,
                           style: textTheme.titleSmall,
                         ),
                         Text(
@@ -359,7 +317,7 @@ class _OrderSummaryCard extends StatelessWidget {
     required this.order,
   });
 
-  final Order order;
+  final OrderEntity order;
 
   @override
   Widget build(BuildContext context) {

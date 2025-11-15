@@ -31,6 +31,7 @@ class MyCourseProvider extends ChangeNotifier {
   // Getters
   List<Lesson> getLessons(String courseId) => _courseLessons[courseId] ?? [];
   CourseProgress? getProgress(String courseId) => _courseProgress[courseId];
+  Map<String, dynamic>? getCourse(String courseId) => _courseDetails[courseId];
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get currentCourseId => _currentCourseId;
@@ -53,6 +54,22 @@ class MyCourseProvider extends ChangeNotifier {
       (lessons) {
         _courseLessons[courseId] = lessons;
         _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  // Load my course detail
+  Future<void> loadMyCourseDetail(String courseId) async {
+    final result = await getMyCourseDetailUseCase.call(courseId);
+
+    result.fold(
+      (failure) {
+        _errorMessage = failure.message;
+        notifyListeners();
+      },
+      (courseDetail) {
+        _courseDetails[courseId] = courseDetail;
         notifyListeners();
       },
     );

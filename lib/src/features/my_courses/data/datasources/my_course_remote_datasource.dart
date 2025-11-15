@@ -34,7 +34,7 @@ class MyCourseRemoteDataSourceImpl implements MyCourseRemoteDataSource {
   @override
   Future<List<LessonModel>> getMyCourseLessons(String courseId) async {
     try {
-      final response = await client.get('/me/courses/$courseId/lessons');
+      final response = await client.get('/courses/$courseId/lessons');
 
       if (response.data == null) {
         throw ServerException('No data received from server');
@@ -68,7 +68,7 @@ class MyCourseRemoteDataSourceImpl implements MyCourseRemoteDataSource {
     required String lessonId,
   }) async {
     try {
-      final response = await client.get('/me/courses/$courseId/lessons/$lessonId');
+      final response = await client.get('/courses/$courseId/lessons/$lessonId');
 
       if (response.data == null) {
         throw ServerException('No data received from server');

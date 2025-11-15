@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-import 'package:igcse_learning_hub/src/data/mock_data.dart';
-import 'package:igcse_learning_hub/src/models/course.dart';
+import '../providers/my_course_provider.dart';
 import 'package:igcse_learning_hub/src/theme/design_tokens.dart';
 
-class MyCourseLessonsPage extends StatelessWidget {
+class MyCourseLessonsPage extends StatefulWidget {
   const MyCourseLessonsPage({
     super.key,
     required this.courseId,
@@ -16,34 +16,60 @@ class MyCourseLessonsPage extends StatelessWidget {
   final bool isCompleted;
 
   @override
+  State<MyCourseLessonsPage> createState() => _MyCourseLessonsPageState();
+}
+
+class _MyCourseLessonsPageState extends State<MyCourseLessonsPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MyCourseProvider>().loadCourseLessons(widget.courseId);
+      context.read<MyCourseProvider>().loadMyCourseDetail(widget.courseId);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final Course course =
-        mockCourses.firstWhere((c) => c.id == courseId, orElse: () => mockCourses.first);
     final textTheme = Theme.of(context).textTheme;
-    final lessons = _mockLessons;
-    final title = isCompleted ? 'Bài học đã hoàn thành' : 'Bài học đang học';
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(title),
-        actions: [
-          if (!isCompleted)
-            TextButton(
-              onPressed: () => context.push('/quiz/detail'),
-              child: const Text('Làm quiz'),
-            ),
-        ],
-      ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemBuilder: (context, index) {
-          final lesson = lessons[index];
-          final status = isCompleted || index < 2
-              ? LessonStatus.completed
-              : index == 2
-                  ? LessonStatus.inProgress
-                  : LessonStatus.locked;
-          return Container(
+    final title = widget.isCompleted ? 'Bài học đã hoàn thành' : 'Bài học đang học';
+    
+    return Consumer<MyCourseProvider>(
+      builder: (context, provider, _) {
+        final lessons = provider.getLessons(widget.courseId);
+        final course = provider.getCourse(widget.courseId);
+        
+        if (provider.isLoading && lessons.isEmpty) {
+          return Scaffold(
+            appBar: AppBar(title: Text(title)),
+            body: const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            title: Text(title),
+            actions: [
+              if (!widget.isCompleted)
+                TextButton(
+                  onPressed: () => context.push('/quiz/detail'),
+                  child: const Text('Làm quiz'),
+                ),
+            ],
+          ),
+          body: lessons.isEmpty
+              ? const Center(child: Text('Chưa có bài học nào'))
+              : ListView.separated(
+                  padding: const EdgeInsets.all(20),
+                  itemBuilder: (context, index) {
+                    final lesson = lessons[index];
+                    final status = lesson.isCompleted
+                        ? LessonStatus.completed
+                        : index == 0
+                            ? LessonStatus.inProgress
+                            : LessonStatus.locked;
+                    return Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -66,53 +92,57 @@ class MyCourseLessonsPage extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Lesson ${index + 1}',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            lesson,
-                            style: textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                            children: [
+                              Text(
+                                'Lesson ${lesson.order}',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                lesson.title,
+                                style: textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                       ),
                     ),
-                    if (!isCompleted && status != LessonStatus.locked)
-                      IconButton(
-                        onPressed: () => context.push('/my-courses/$courseId/video'),
-                        icon: const Icon(Icons.play_circle_fill_rounded),
-                      ),
+                        if (!widget.isCompleted && status != LessonStatus.locked)
+                          IconButton(
+                            onPressed: () => context.push('/lesson/${widget.courseId}/${lesson.id}'),
+                            icon: const Icon(Icons.play_circle_fill_rounded),
+                          ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Thời lượng: 15 phút • Tài liệu PDF và quiz cuối bài',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                    const SizedBox(height: 12),
+                    Text(
+                      lesson.description ?? 'Bài học ${lesson.order}',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
               ],
             ),
           );
         },
-        separatorBuilder: (_, __) => const SizedBox(height: 16),
-        itemCount: lessons.length,
-      ),
-      bottomNavigationBar: !isCompleted
-          ? Padding(
-              padding: const EdgeInsets.all(20),
-              child: ElevatedButton(
-                onPressed: () => context.push('/quiz'),
-                child: Text('Ôn luyện quiz cho ${course.title}'),
-              ),
-            )
-          : null,
+                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  itemCount: lessons.length,
+                ),
+          bottomNavigationBar: !widget.isCompleted && course != null
+              ? Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: ElevatedButton(
+                    onPressed: () => context.push('/quiz'),
+                    child: Text('Ôn luyện quiz cho ${course['title'] ?? 'khóa học'}'),
+                  ),
+                )
+              : null,
+        );
+      },
     );
   }
 }
@@ -124,13 +154,11 @@ class MyCourseVideoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Course course =
-        mockCourses.firstWhere((c) => c.id == courseId, orElse: () => mockCourses.first);
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: Text(course.title),
+        title: const Text('Video Lesson'),
         actions: [
           IconButton(
             onPressed: () {},
@@ -210,8 +238,6 @@ class CourseCompletionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Course course =
-        mockCourses.firstWhere((c) => c.id == courseId, orElse: () => mockCourses.first);
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -242,7 +268,7 @@ class CourseCompletionPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Bạn đã hoàn thành toàn bộ khoá học ${course.title}. Tiếp tục luyện tập với quiz để giữ phong độ nhé.',
+                'Bạn đã hoàn thành toàn bộ khóa học. Tiếp tục luyện tập với quiz để giữ phong độ nhé.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.5,
@@ -288,11 +314,4 @@ class _StatusIcon extends StatelessWidget {
 
 enum LessonStatus { completed, inProgress, locked }
 
-const List<String> _mockLessons = [
-  'Brand Positioning Fundamentals',
-  'Color Psychology for Designers',
-  'Advanced Composition Rules',
-  'Typography Pairing in Branding',
-  'Creative Direction Workshop',
-  'Capstone Presentation',
-];
+

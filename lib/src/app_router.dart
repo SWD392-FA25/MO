@@ -281,7 +281,10 @@ GoRouter buildRouter() {
       ),
       GoRoute(
         path: '/orders/:orderId',
-        builder: (context, state) => OrderDetailPage(orderId: state.pathParameters['orderId']!),
+        builder: (context, state) {
+          // Use transactions OrderProvider instead of my_courses
+          return OrderDetailPage(orderId: state.pathParameters['orderId']!);
+        },
       ),
       GoRoute(
         path: '/quiz/:quizId',

@@ -39,6 +39,7 @@ class OrderProvider extends ChangeNotifier {
       _orders.where((o) => o.isPending).toList();
   List<OrderEntity> get paidOrders => _orders.where((o) => o.isPaid).toList();
   OrderEntity? get currentOrder => _currentOrder;
+  OrderEntity? get selectedOrder => _currentOrder; // Alias for compatibility
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get checkoutUrl => _checkoutUrl;
@@ -124,13 +125,42 @@ class OrderProvider extends ChangeNotifier {
     );
   }
 
-  // Get order by ID
+  // Get order by ID (sync)
   OrderEntity? getOrderById(String orderId) {
     try {
       return _orders.firstWhere((o) => o.id == orderId);
     } catch (e) {
       return null;
     }
+  }
+
+  // Load order by ID (async - for detail page)
+  Future<void> loadOrderById(String orderId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final result = await repository.getOrderById(orderId);
+
+    result.fold(
+      (failure) {
+        _errorMessage = failure.message;
+        _isLoading = false;
+        notifyListeners();
+      },
+      (order) {
+        _currentOrder = order;
+        // Also update in orders list if exists
+        final index = _orders.indexWhere((o) => o.id == orderId);
+        if (index != -1) {
+          _orders[index] = order;
+        } else {
+          _orders.insert(0, order);
+        }
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
   }
 
   // Refresh

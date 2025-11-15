@@ -16,6 +16,7 @@ class EnrollmentRemoteDataSourceImpl implements EnrollmentRemoteDataSource {
   @override
   Future<List<EnrollmentModel>> getMyEnrollments() async {
     try {
+      print('🔵 API Call: GET /me/enrollments');
       final response = await client.get('/me/enrollments');
 
       if (response.data == null) {

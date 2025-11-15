@@ -26,6 +26,7 @@ class EnrollmentProvider extends ChangeNotifier {
 
   // Load enrollments
   Future<void> loadEnrollments({bool refresh = false}) async {
+    print('🔵 EnrollmentProvider.loadEnrollments() called');
     if (_isLoading) return;
 
     if (refresh) {
@@ -36,6 +37,7 @@ class EnrollmentProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
+    print('🔵 Calling getMyEnrollmentsUseCase...');
     final result = await getMyEnrollmentsUseCase.call(NoParams());
 
     result.fold(

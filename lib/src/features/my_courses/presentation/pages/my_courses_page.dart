@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../catalog/domain/entities/course.dart';
-import '../../domain/entities/enrollment.dart';
-import '../providers/my_course_provider.dart';
 import '../providers/enrollment_provider.dart';
+import '../providers/my_course_provider.dart';
 import '../../../../theme/design_tokens.dart';
 
 class MyCoursesPage extends StatefulWidget {
@@ -19,7 +17,10 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   @override
   void initState() {
     super.initState();
+    print('🔵 MyCoursesPage initState - Loading enrollments...');
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Load enrollments
+      print('🔵 Calling EnrollmentProvider.loadEnrollments()');
       context.read<EnrollmentProvider>().loadEnrollments();
     });
   }
@@ -28,61 +29,25 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
   Widget build(BuildContext context) {
     return Consumer<EnrollmentProvider>(
       builder: (context, enrollmentProvider, child) {
-        return DefaultTabController(
-          length: 2,
-          child: Scaffold(
-            backgroundColor: AppColors.background,
-            appBar: AppBar(
-              title: const Text('My Courses'),
-              bottom: const TabBar(
-                tabs: [
-                  Tab(text: 'Đang học'),
-                  Tab(text: 'Hoàn thành'),
-                ],
-              ),
-            ),
-            body: TabBarView(
-              children: [
-                _CoursesTab(
-                  enrollments: enrollmentProvider.activeEnrollments,
-                  onTap: (enrollment) {
-                    // Load course lessions and navigate
-                    context.read<MyCourseProvider>().loadCourseLessons(enrollment.courseId);
-                    context.read<MyCourseProvider>().loadCourseProgress(enrollment.courseId);
-                    context.push('/my-courses/ongoing/${enrollment.courseId}');
-                  },
-                  progressBuilder: (enrollment) => Consumer<MyCourseProvider>(
-                    builder: (context, courseProvider, _) {
-                      final progress = courseProvider.getProgress(enrollment.courseId);
-                      if (progress != null) {
-                        return LinearProgressIndicator(
-                          value: progress.progressPercentage / 100,
-                          minHeight: 6,
-                          backgroundColor: const Color(0xFFE8E7FF),
-                          valueColor: const AlwaysStoppedAnimation(AppColors.primary),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ),
-                _CoursesTab(
-                  enrollments: enrollmentProvider.completedEnrollments,
-                  onTap: (enrollment) =>
-                      context.push('/my-courses/completed/${enrollment.courseId}'),
-                  actionBuilder: (enrollment) => OutlinedButton.icon(
-                    onPressed: () => context.push('/quiz'),
-                    icon: const Icon(Icons.quiz),
-                    label: const Text('Làm quiz'),
-                  ),
-                ),
-              ],
-            ),
-            floatingActionButton: FloatingActionButton.extended(
-              onPressed: () => context.push('/transactions'),
-              label: const Text('Xem đơn hàng'),
-              icon: const Icon(Icons.receipt_long),
-            ),
+        final enrollments = enrollmentProvider.enrollments;
+        
+        // Extract unique course IDs from enrollments
+        final courseIds = enrollments.map((e) => e.courseId).toSet().toList();
+
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            title: const Text('My Courses'),
+          ),
+          body: enrollmentProvider.isLoading && enrollments.isEmpty
+              ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+              : courseIds.isEmpty
+                  ? _EmptyState()
+                  : _CoursesList(courseIds: courseIds),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => context.push('/transactions'),
+            label: const Text('Xem đơn hàng'),
+            icon: const Icon(Icons.receipt_long),
           ),
         );
       },
@@ -92,41 +57,91 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
 
 
 
-class _CoursesTab extends StatelessWidget {
-  const _CoursesTab({
-    required this.enrollments,
-    required this.onTap,
-    this.progressBuilder,
-    this.actionBuilder,
-  });
+class _EmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.school_outlined, size: 64, color: AppColors.textSecondary),
+          const SizedBox(height: 16),
+          const Text('Chưa có khóa học nào', style: TextStyle(fontSize: 16, color: AppColors.textSecondary)),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => context.go('/dashboard'),
+            child: const Text('Khám phá khóa học'),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-  final List<Enrollment> enrollments;
-  final ValueChanged<Enrollment> onTap;
-  final Widget Function(Enrollment enrollment)? progressBuilder;
-  final Widget Function(Enrollment enrollment)? actionBuilder;
+class _CoursesList extends StatelessWidget {
+  const _CoursesList({required this.courseIds});
+
+  final List<String> courseIds;
 
   @override
   Widget build(BuildContext context) {
-    if (enrollments.isEmpty) {
-      return const Center(child: Text('Chưa có khóa học nào ở danh mục này.'));
-    }
-    final textTheme = Theme.of(context).textTheme;
     return ListView.separated(
       padding: const EdgeInsets.all(20),
-      itemCount: enrollments.length,
+      itemCount: courseIds.length,
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
-        final enrollment = enrollments[index];
-        final course = enrollment.course;
-        
-        // Handle null course
+        final courseId = courseIds[index];
+        return _CourseCard(courseId: courseId);
+      },
+    );
+  }
+}
+
+class _CourseCard extends StatefulWidget {
+  const _CourseCard({required this.courseId});
+
+  final String courseId;
+
+  @override
+  State<_CourseCard> createState() => _CourseCardState();
+}
+
+class _CourseCardState extends State<_CourseCard> {
+  @override
+  void initState() {
+    super.initState();
+    // Load course detail and progress
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MyCourseProvider>().loadMyCourseDetail(widget.courseId);
+      context.read<MyCourseProvider>().loadCourseProgress(widget.courseId);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<MyCourseProvider>(
+      builder: (context, provider, _) {
+        final course = provider.getCourse(widget.courseId);
+        final progress = provider.getProgress(widget.courseId);
+        final textTheme = Theme.of(context).textTheme;
+
         if (course == null) {
-          return const SizedBox.shrink();
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          );
         }
-        
+
         return InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: () => onTap(enrollment),
+          onTap: () {
+            context.read<MyCourseProvider>().loadCourseLessons(widget.courseId);
+            context.push('/my-courses/ongoing/${widget.courseId}');
+          },
           child: Ink(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -152,7 +167,6 @@ class _CoursesTab extends StatelessWidget {
                         borderRadius: BorderRadius.circular(18),
                         color: AppColors.primary.withAlpha(20),
                       ),
-                      // TODO: Thay bằng thumbnail khóa học từ Figma khi có asset.
                       child: const Icon(
                         Icons.play_circle_fill_rounded,
                         color: AppColors.primary,
@@ -165,26 +179,43 @@ class _CoursesTab extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            course.title,
+                            course['title']?.toString() ?? 'Course',
                             style: textTheme.titleMedium,
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            '24 bài học • 12 giờ học',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                            course['description']?.toString() ?? '',
+                            style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                if (progressBuilder != null) progressBuilder!(enrollment),
-                if (actionBuilder != null) ...[
-                  const SizedBox(height: 12),
-                  actionBuilder!(enrollment),
+                if (progress != null) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: LinearProgressIndicator(
+                          value: progress.progressPercentage / 100,
+                          minHeight: 6,
+                          backgroundColor: const Color(0xFFE8E7FF),
+                          valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '${progress.progressPercentage.toStringAsFixed(0)}%',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ],
             ),

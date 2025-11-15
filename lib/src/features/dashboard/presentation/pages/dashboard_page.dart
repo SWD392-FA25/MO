@@ -17,19 +17,28 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int _index = 0;
 
-  final _pages = const [
-    HomePage(),
-    MyCoursesPage(),
-    LunabyPage(),
-    TransactionsPage(),
-    ProfilePage(),
-  ];
+  Widget _buildPage(int index) {
+    switch (index) {
+      case 0:
+        return const HomePage();
+      case 1:
+        return const MyCoursesPage();
+      case 2:
+        return const LunabyPage();
+      case 3:
+        return const TransactionsPage();
+      case 4:
+        return const ProfilePage();
+      default:
+        return const HomePage();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: IndexedStack(index: _index, children: _pages),
+      body: _buildPage(_index),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         backgroundColor: Colors.white,
